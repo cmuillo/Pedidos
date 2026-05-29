@@ -6,6 +6,7 @@ export function buildOnTheWayLink(params: {
   whatsapp: string;
   customerName: string;
   code: string;
+  type: "PICKUP" | "DELIVERY";
   items: MsgItem[];
   totalColones: number;
   sinpePhone?: string | null;
@@ -16,8 +17,11 @@ export function buildOnTheWayLink(params: {
   const sinpe = params.sinpePhone
     ? `\nSi el pago es por SINPE, envía el comprobante a este número: ${params.sinpePhone}.`
     : "";
+  const greeting = params.type === "PICKUP"
+    ? `Hola ${params.customerName}, ¡te esperamos para que lo retires! 🍦`
+    : `Hola ${params.customerName}, ¡ya vamos en camino! 🍦`;
   const text =
-    `Hola ${params.customerName}, ¡ya vamos en camino! 🍦\n` +
+    `${greeting}\n` +
     `Pedido #${params.code}\n\n` +
     `Resumen:\n${lines}\n\n` +
     `Total: ${formatColones(params.totalColones)}${sinpe}\n\n` +

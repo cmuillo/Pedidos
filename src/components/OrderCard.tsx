@@ -40,6 +40,7 @@ export default function OrderCard({
     whatsapp: order.whatsapp,
     customerName: order.customerName,
     code: order.code,
+    type: order.type,
     items: order.items,
     totalColones: order.totalColones,
     sinpePhone: sinpePhone ?? null,

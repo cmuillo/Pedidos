@@ -7,6 +7,7 @@ describe("buildOnTheWayLink", () => {
       whatsapp: "50688887777",
       customerName: "Ana",
       code: "ABC123",
+      type: "DELIVERY",
       items: [{ nameSnapshot: "Vainilla", qty: 2, unitPrice: 1000 }],
       totalColones: 2000,
       sinpePhone: "88880000",
@@ -19,6 +20,21 @@ describe("buildOnTheWayLink", () => {
     expect(decoded).toContain("₡2.000");
     expect(decoded).toContain("88880000");
     expect(decoded).toContain("Muchas gracias");
+  });
+
+  it("uses a pickup greeting for PICKUP orders", () => {
+    const link = buildOnTheWayLink({
+      whatsapp: "50688887777",
+      customerName: "Ana",
+      code: "PCK001",
+      type: "PICKUP",
+      items: [{ nameSnapshot: "Coco", qty: 1, unitPrice: 700 }],
+      totalColones: 700,
+      sinpePhone: null,
+    });
+    const decoded = decodeURIComponent(link.split("text=")[1]);
+    expect(decoded).toContain("retires");
+    expect(decoded).not.toContain("camino");
   });
 });
 
@@ -33,6 +49,7 @@ describe("buildNavLink", () => {
       whatsapp: "50688887777",
       customerName: "Ana",
       code: "XYZ999",
+      type: "DELIVERY",
       items: [{ nameSnapshot: "Vainilla", qty: 1, unitPrice: 500 }],
       totalColones: 500,
       sinpePhone: null,
