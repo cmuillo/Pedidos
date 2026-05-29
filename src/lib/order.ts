@@ -1,3 +1,6 @@
+import { prisma } from "@/lib/prisma";
+import { haversineMeters } from "@/lib/distance";
+
 export type CartLine = {
   productId: string;
   nameSnapshot: string;
@@ -69,4 +72,62 @@ export function generateOrderCode(now: Date = new Date()): string {
   const ymd = now.toISOString().slice(2, 10).replace(/-/g, "");
   const rand = Math.floor(1000 + Math.random() * 9000);
   return `H${ymd}-${rand}`;
+}
+
+export async function persistOrder(input: {
+  cart: { productId: string; qty: number }[];
+  type: OrderType;
+  customerName: string;
+  whatsapp: string;
+  addressText?: string | null;
+  lat?: number | null;
+  lng?: number | null;
+}) {
+  return prisma.$transaction(async (tx) => {
+    const ids = input.cart.map((c) => c.productId);
+    const products = await tx.product.findMany({ where: { id: { in: ids } } });
+
+    const built = buildOrderData({
+      cart: input.cart,
+      products,
+      type: input.type,
+      customerName: input.customerName,
+      whatsapp: input.whatsapp,
+    });
+
+    for (const d of built.decrements) {
+      const updated = await tx.product.updateMany({
+        where: { id: d.id, stock: { gte: d.qty } },
+        data: { stock: { decrement: d.qty } },
+      });
+      if (updated.count === 0) {
+        const p = products.find((x) => x.id === d.id);
+        throw new InsufficientStockError(p?.name ?? d.id);
+      }
+    }
+
+    let distanceMeters: number | null = null;
+    if (input.type === "DELIVERY" && input.lat != null && input.lng != null) {
+      const settings = await tx.businessSettings.findUnique({ where: { id: 1 } });
+      if (settings?.shopLat != null && settings?.shopLng != null) {
+        distanceMeters = haversineMeters(settings.shopLat, settings.shopLng, input.lat, input.lng);
+      }
+    }
+
+    return tx.order.create({
+      data: {
+        code: generateOrderCode(),
+        type: input.type,
+        customerName: input.customerName,
+        whatsapp: input.whatsapp,
+        addressText: input.addressText ?? null,
+        lat: input.lat ?? null,
+        lng: input.lng ?? null,
+        distanceMeters,
+        totalColones: built.totalColones,
+        items: { create: built.items },
+      },
+      include: { items: true },
+    });
+  });
 }
