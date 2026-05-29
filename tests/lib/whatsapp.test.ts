@@ -6,6 +6,7 @@ describe("buildOnTheWayLink", () => {
     const link = buildOnTheWayLink({
       whatsapp: "50688887777",
       customerName: "Ana",
+      code: "ABC123",
       items: [{ nameSnapshot: "Vainilla", qty: 2, unitPrice: 1000 }],
       totalColones: 2000,
       sinpePhone: "88880000",
@@ -13,9 +14,11 @@ describe("buildOnTheWayLink", () => {
     expect(link.startsWith("https://wa.me/50688887777?text=")).toBe(true);
     const decoded = decodeURIComponent(link.split("text=")[1]);
     expect(decoded).toContain("camino");
+    expect(decoded).toContain("ABC123");
     expect(decoded).toContain("Vainilla");
     expect(decoded).toContain("₡2.000");
     expect(decoded).toContain("88880000");
+    expect(decoded).toContain("Muchas gracias");
   });
 });
 
@@ -29,6 +32,7 @@ describe("buildNavLink", () => {
     const link = buildOnTheWayLink({
       whatsapp: "50688887777",
       customerName: "Ana",
+      code: "XYZ999",
       items: [{ nameSnapshot: "Vainilla", qty: 1, unitPrice: 500 }],
       totalColones: 500,
       sinpePhone: null,

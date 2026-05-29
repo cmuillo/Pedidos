@@ -5,6 +5,7 @@ type MsgItem = { nameSnapshot: string; qty: number; unitPrice: number };
 export function buildOnTheWayLink(params: {
   whatsapp: string;
   customerName: string;
+  code: string;
   items: MsgItem[];
   totalColones: number;
   sinpePhone?: string | null;
@@ -13,12 +14,14 @@ export function buildOnTheWayLink(params: {
     .map((i) => `• ${i.qty}x ${i.nameSnapshot} (${formatColones(i.unitPrice * i.qty)})`)
     .join("\n");
   const sinpe = params.sinpePhone
-    ? `\n\nPor favor envíe el comprobante SINPE al ${params.sinpePhone}.`
+    ? `\nSi el pago es por SINPE, envía el comprobante a este número: ${params.sinpePhone}.`
     : "";
   const text =
-    `Hola ${params.customerName}, ¡ya vamos en camino! 🍦\n\n` +
-    `Resumen de su pedido:\n${lines}\n\n` +
-    `Total: ${formatColones(params.totalColones)}${sinpe}`;
+    `Hola ${params.customerName}, ¡ya vamos en camino! 🍦\n` +
+    `Pedido #${params.code}\n\n` +
+    `Resumen:\n${lines}\n\n` +
+    `Total: ${formatColones(params.totalColones)}${sinpe}\n\n` +
+    `*¡Muchas gracias por tu compra!*`;
   return `https://wa.me/${params.whatsapp}?text=${encodeURIComponent(text)}`;
 }
 

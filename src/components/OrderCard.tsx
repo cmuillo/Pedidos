@@ -39,6 +39,7 @@ export default function OrderCard({
   const waLink = buildOnTheWayLink({
     whatsapp: order.whatsapp,
     customerName: order.customerName,
+    code: order.code,
     items: order.items,
     totalColones: order.totalColones,
     sinpePhone: sinpePhone ?? null,
