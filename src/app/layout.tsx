@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/Providers";
 import ThemeToggle from "@/components/ThemeToggle";
+import { prisma } from "@/lib/prisma";
 
 const themeInitScript = `(function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark');}}catch(e){}})();`;
 
@@ -16,10 +17,17 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Heladería",
-  description: "Pedidos en línea",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  let name = "Heladería";
+  try {
+    const settings = await prisma.businessSettings.findUnique({ where: { id: 1 } });
+    if (settings?.name) name = settings.name;
+  } catch {}
+  return {
+    title: name,
+    description: "Pedidos en línea",
+  };
+}
 
 export default function RootLayout({
   children,
