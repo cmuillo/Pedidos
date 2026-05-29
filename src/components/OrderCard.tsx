@@ -50,7 +50,7 @@ export default function OrderCard({
   });
 
   return (
-    <div className="border rounded-xl p-4 space-y-3 bg-surface shadow-sm">
+    <div className="relative border rounded-xl p-4 space-y-3 bg-surface shadow-sm">
       <div className="flex justify-between items-start">
         <div>
           <p className="font-semibold">{order.customerName}</p>
@@ -82,7 +82,7 @@ export default function OrderCard({
         <p className="text-xs text-muted">A {(order.distanceMeters / 1000).toFixed(1)} km</p>
       )}
       {!readOnly && (
-      <div className="flex flex-wrap gap-2 pt-1">
+      <div className="flex flex-wrap gap-2 pt-1 pr-10">
         {order.lat != null && order.lng != null && (
           <a
             className="px-3 py-2 border rounded-lg text-sm font-medium hover:bg-surface-2 transition-colors"
@@ -109,16 +109,26 @@ export default function OrderCard({
           onClick={() => patch({ status: "DELIVERED" })}>
           ✓ Entregado
         </button>
+      </div>
+      )}
+      {!readOnly && (
         <button
-          className="px-3 py-2 border border-danger text-danger rounded-lg text-sm font-medium hover:bg-danger-soft transition-colors"
+          aria-label="Cancelar pedido"
+          title="Cancelar pedido (devuelve el stock)"
+          className="absolute bottom-3 right-3 w-9 h-9 flex items-center justify-center rounded-lg text-danger hover:bg-danger-soft transition-colors"
           onClick={() => {
             if (confirm("¿Cancelar este pedido? Se devolverá el stock al inventario.")) {
               patch({ status: "CANCELLED" });
             }
           }}>
-          ✕ Cancelar
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 6h18" />
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+            <line x1="10" y1="11" x2="10" y2="17" />
+            <line x1="14" y1="11" x2="14" y2="17" />
+          </svg>
         </button>
-      </div>
       )}
     </div>
   );
