@@ -1,0 +1,75 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model BusinessSettings {
+  id              Int      @id @default(1)
+  name            String   @default("Mi Heladería")
+  logoBase64      String?  @db.Text
+  deliveryEnabled Boolean  @default(true)
+  shopLat         Float?
+  shopLng         Float?
+  sinpePhone      String?
+  whatsappFrom    String?
+  updatedAt       DateTime @updatedAt
+}
+
+model Product {
+  id           String      @id @default(cuid())
+  name         String
+  priceColones Int
+  stock        Int         @default(0)
+  active       Boolean     @default(true)
+  sortOrder    Int         @default(0)
+  createdAt    DateTime    @default(now())
+  orderItems   OrderItem[]
+}
+
+enum OrderType {
+  PICKUP
+  DELIVERY
+}
+
+enum OrderStatus {
+  PENDING
+  DELIVERED
+}
+
+model Order {
+  id             String      @id @default(cuid())
+  code           String      @unique
+  type           OrderType
+  customerName   String
+  whatsapp       String
+  addressText    String?
+  lat            Float?
+  lng            Float?
+  distanceMeters Float?
+  totalColones   Int
+  status         OrderStatus @default(PENDING)
+  paid           Boolean     @default(false)
+  createdAt      DateTime    @default(now())
+  items          OrderItem[]
+}
+
+model OrderItem {
+  id           String  @id @default(cuid())
+  orderId      String
+  productId    String
+  nameSnapshot String
+  unitPrice    Int
+  qty          Int
+  order        Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product      Product @relation(fields: [productId], references: [id])
+}
+
+model AdminUser {
+  id           String @id @default(cuid())
+  email        String @unique
+  passwordHash String
+}
