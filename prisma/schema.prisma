@@ -38,6 +38,7 @@ enum OrderType {
 enum OrderStatus {
   PENDING
   DELIVERED
+  CANCELLED
 }
 
 model Order {
@@ -55,6 +56,9 @@ model Order {
   paid           Boolean     @default(false)
   createdAt      DateTime    @default(now())
   items          OrderItem[]
+
+  @@index([status])
+  @@index([createdAt])
 }
 
 model OrderItem {
@@ -65,7 +69,10 @@ model OrderItem {
   unitPrice    Int
   qty          Int
   order        Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product      Product @relation(fields: [productId], references: [id])
+  product      Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([orderId])
+  @@index([productId])
 }
 
 model AdminUser {
