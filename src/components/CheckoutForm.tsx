@@ -14,8 +14,8 @@ export interface CheckoutFormHandle {
   submit: () => void;
 }
 
-const CheckoutForm = forwardRef<CheckoutFormHandle, { deliveryEnabled: boolean; onSuccess?: (code: string) => void }>(
-function CheckoutForm({ deliveryEnabled, onSuccess }, ref) {
+const CheckoutForm = forwardRef<CheckoutFormHandle, { deliveryEnabled: boolean; shopLocation?: Pos | null; onSuccess?: (code: string) => void }>(
+function CheckoutForm({ deliveryEnabled, shopLocation, onSuccess }, ref) {
   const { items, setQty, clear } = useCart();
   const [type, setType] = useState<"PICKUP" | "DELIVERY">("PICKUP");
   const [name, setName] = useState("");
@@ -134,7 +134,7 @@ function CheckoutForm({ deliveryEnabled, onSuccess }, ref) {
       {type === "DELIVERY" && (
         <>
           <p className="text-sm text-muted">Marca tu ubicación en el mapa:</p>
-          <LocationPicker value={pos} onChange={setPos} />
+          <LocationPicker value={pos} onChange={setPos} fallback={shopLocation ?? null} />
           <input
             className="w-full border rounded-lg p-3 bg-surface placeholder:text-muted" placeholder="Referencias de la dirección (opcional)"
             value={addressText} onChange={(e) => setAddressText(e.target.value)} />

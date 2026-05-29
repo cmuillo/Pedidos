@@ -4,13 +4,15 @@ import { CartProvider, useCart } from "@/components/CartContext";
 import MenuGrid from "@/components/MenuGrid";
 import CheckoutForm, { CheckoutFormHandle } from "@/components/CheckoutForm";
 
-type Business = { name: string; logoBase64: string | null; deliveryEnabled: boolean };
+type Business = { name: string; logoBase64: string | null; deliveryEnabled: boolean; shopLat: number | null; shopLng: number | null };
 
 function HomeContent() {
   const [business, setBusiness] = useState<Business>({
     name: "Mi Heladería",
     logoBase64: null,
     deliveryEnabled: false,
+    shopLat: null,
+    shopLng: null,
   });
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [orderCode, setOrderCode] = useState("");
@@ -57,6 +59,11 @@ function HomeContent() {
           <CheckoutForm
             ref={checkoutRef}
             deliveryEnabled={business.deliveryEnabled}
+            shopLocation={
+              business.shopLat != null && business.shopLng != null
+                ? { lat: business.shopLat, lng: business.shopLng }
+                : null
+            }
             onSuccess={(code) => {
               setOrderCode(code);
               setStep(3);

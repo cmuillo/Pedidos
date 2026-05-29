@@ -28,7 +28,7 @@ export async function GET(req: Request) {
     }).sort((a, b) => a.distanceMeters - b.distanceMeters);
 
     const pickup = orders.filter((o) => o.type === "PICKUP");
-    return NextResponse.json({ pickup, delivery });
+    return NextResponse.json({ pickup, delivery, shopLat, shopLng });
   }
 
   return NextResponse.json({ orders });

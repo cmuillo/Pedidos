@@ -6,9 +6,11 @@ type Pos = { lat: number; lng: number };
 export default function LocationPicker({
   value,
   onChange,
+  fallback,
 }: {
   value: Pos | null;
   onChange: (pos: Pos) => void;
+  fallback?: Pos | null;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
@@ -30,7 +32,8 @@ export default function LocationPicker({
         shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
       });
 
-      const start = value ?? { lat: 9.9281, lng: -84.0907 };
+      // Start at the selected position, else the registered shop, else San José.
+      const start = value ?? fallback ?? { lat: 9.9281, lng: -84.0907 };
       const map = L.map(ref.current).setView([start.lat, start.lng], 15);
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: "© OpenStreetMap contributors",
