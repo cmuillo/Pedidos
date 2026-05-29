@@ -47,50 +47,50 @@ export default function InventarioPage() {
 
   return (
     <div className="space-y-4 max-w-lg">
-      <div className="border rounded-lg p-4 space-y-2">
+      <div className="border rounded-xl p-4 space-y-2 bg-surface shadow-sm">
         <h2 className="font-semibold">Agregar sabor</h2>
         <input
-          className="w-full border rounded p-2" placeholder="Nombre del sabor"
+          className="w-full border rounded-lg p-2 bg-surface placeholder:text-muted" placeholder="Nombre del sabor"
           value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
         <input
-          className="w-full border rounded p-2" type="number" placeholder="Precio ₡" min={0}
+          className="w-full border rounded-lg p-2 bg-surface placeholder:text-muted" type="number" placeholder="Precio ₡" min={0}
           value={form.priceColones} onChange={(e) => setForm({ ...form, priceColones: e.target.value })} />
         <input
-          className="w-full border rounded p-2" type="number" placeholder="Stock" min={0}
+          className="w-full border rounded-lg p-2 bg-surface placeholder:text-muted" type="number" placeholder="Stock" min={0}
           value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} />
         <button
           onClick={add}
           disabled={adding}
-          className="w-full bg-pink-600 text-white rounded p-2 font-medium disabled:opacity-50">
+          className="w-full bg-accent text-accent-fg rounded-lg p-2 font-medium disabled:opacity-50 hover:bg-accent-hover transition-colors">
           {adding ? "Agregando…" : "Agregar"}
         </button>
       </div>
 
       {products.length === 0 && (
-        <p className="text-center text-gray-400 py-4">Sin productos todavía</p>
+        <p className="text-center text-muted py-4">Sin productos todavía</p>
       )}
 
       {products.map((p) => (
-        <div key={p.id} className="border rounded-lg p-4">
+        <div key={p.id} className="border rounded-xl p-4 bg-surface shadow-sm">
           <div className="flex items-center justify-between mb-2">
             <span className="font-semibold">{p.name}</span>
-            <span className="text-gray-600">{formatColones(p.priceColones)}</span>
+            <span className="text-muted">{formatColones(p.priceColones)}</span>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <label className="text-sm text-gray-600">Stock:</label>
+            <label className="text-sm text-muted">Stock:</label>
             <input
-              className="w-20 border rounded p-1 text-sm" type="number" defaultValue={p.stock} min={0}
+              className="w-20 border rounded-lg p-1 text-sm bg-surface" type="number" defaultValue={p.stock} min={0}
               onBlur={(e) => {
                 const val = Number(e.target.value);
                 if (!isNaN(val) && val !== p.stock) patch(p.id, { stock: val });
               }} />
             <button
-              className={`px-2 py-1 border rounded text-sm ${p.active ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"}`}
+              className={`px-2 py-1 border rounded-lg text-sm transition-colors ${p.active ? "bg-success-soft text-success border-success/40" : "bg-surface-2 text-muted"}`}
               onClick={() => patch(p.id, { active: !p.active })}>
               {p.active ? "Activo" : "Inactivo"}
             </button>
             <button
-              className="px-2 py-1 border rounded text-sm text-red-600 hover:bg-red-50 ml-auto"
+              className="px-2 py-1 border rounded-lg text-sm text-danger hover:bg-danger-soft ml-auto transition-colors"
               onClick={() => remove(p.id)}>
               Eliminar
             </button>

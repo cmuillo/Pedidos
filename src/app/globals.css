@@ -1,26 +1,82 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #faf6f8;
+  --surface: #ffffff;
+  --surface-2: #f6eff3;
+  --foreground: #2c2730;
+  --muted: #8b7f88;
+  --line: #ece3e9;
+  --accent: #e0689f;
+  --accent-hover: #d4568f;
+  --accent-fg: #ffffff;
+  --accent-soft: #fbe9f2;
+  --danger: #e0567a;
+  --danger-soft: #fbe7ec;
+  --success: #4f9d77;
+  --success-soft: #e6f4ec;
+}
+
+.dark {
+  --background: #16131a;
+  --surface: #211c27;
+  --surface-2: #2b2532;
+  --foreground: #ece7ef;
+  --muted: #9c8fa6;
+  --line: #332c3b;
+  --accent: #e88bb8;
+  --accent-hover: #f0a0c8;
+  --accent-fg: #241420;
+  --accent-soft: #2f1f29;
+  --danger: #f08aa2;
+  --danger-soft: #36222a;
+  --success: #7fc4a1;
+  --success-soft: #1f2e27;
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-fg: var(--accent-fg);
+  --color-accent-soft: var(--accent-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  *,
+  ::after,
+  ::before {
+    border-color: var(--line);
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

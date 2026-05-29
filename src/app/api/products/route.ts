@@ -16,6 +16,8 @@ export async function GET() {
       name: settings?.name ?? "Mi Heladería",
       logoBase64: settings?.logoBase64 ?? null,
       deliveryEnabled: settings?.deliveryEnabled ?? false,
+      shopLat: settings?.shopLat ?? null,
+      shopLng: settings?.shopLng ?? null,
     },
   });
 }
