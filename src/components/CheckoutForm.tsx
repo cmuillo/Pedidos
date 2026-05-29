@@ -14,7 +14,7 @@ export interface CheckoutFormHandle {
   submit: () => void;
 }
 
-const CheckoutForm = forwardRef<CheckoutFormHandle, { deliveryEnabled: boolean; onSuccess?: () => void }>(
+const CheckoutForm = forwardRef<CheckoutFormHandle, { deliveryEnabled: boolean; onSuccess?: (code: string) => void }>(
 function CheckoutForm({ deliveryEnabled, onSuccess }, ref) {
   const { items, setQty, clear } = useCart();
   const [type, setType] = useState<"PICKUP" | "DELIVERY">("PICKUP");
@@ -92,7 +92,7 @@ function CheckoutForm({ deliveryEnabled, onSuccess }, ref) {
       if (!res.ok) return setError(data.error ?? "No se pudo crear el pedido");
       clear();
       setDone({ code: data.code });
-      onSuccess?.();
+      onSuccess?.(data.code);
     } finally {
       setSubmitting(false);
     }
