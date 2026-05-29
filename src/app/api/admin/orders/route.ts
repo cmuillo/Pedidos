@@ -43,12 +43,25 @@ export async function GET(req: Request) {
     ];
   }
 
-  const orders = await prisma.order.findMany({
-    where,
-    include: { items: { include: { product: true } } },
-    orderBy: { createdAt: "desc" },
-    take: 200,
-  });
+  const pageSize = Math.min(Math.max(Number(searchParams.get("pageSize")) || 20, 1), 100);
+  const page = Math.max(Number(searchParams.get("page")) || 1, 1);
 
-  return NextResponse.json({ orders });
+  const [orders, total] = await Promise.all([
+    prisma.order.findMany({
+      where,
+      include: { items: { include: { product: true } } },
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    }),
+    prisma.order.count({ where }),
+  ]);
+
+  return NextResponse.json({
+    orders,
+    page,
+    pageSize,
+    total,
+    totalPages: Math.max(Math.ceil(total / pageSize), 1),
+  });
 }
