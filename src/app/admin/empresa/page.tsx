@@ -106,6 +106,66 @@ export default function EmpresaPage() {
           value={s.shopLat != null && s.shopLng != null ? { lat: s.shopLat, lng: s.shopLng } : null}
           onChange={(pos) => save({ shopLat: pos.lat, shopLng: pos.lng })} />
       </div>
+
+      <PasswordSection />
     </div>
+  );
+}
+
+function PasswordSection() {
+  const [current, setCurrent] = useState("");
+  const [next, setNext] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setMsg(null);
+    if (next.length < 8) return setMsg({ type: "err", text: "La nueva contraseña debe tener al menos 8 caracteres" });
+    if (next !== confirm) return setMsg({ type: "err", text: "Las contraseñas no coinciden" });
+    setBusy(true);
+    try {
+      const res = await fetch("/api/admin/password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentPassword: current, newPassword: next }),
+      });
+      const data = await res.json();
+      if (!res.ok) return setMsg({ type: "err", text: data.error ?? "No se pudo cambiar la contraseña" });
+      setMsg({ type: "ok", text: "Contraseña actualizada" });
+      setCurrent(""); setNext(""); setConfirm("");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <form onSubmit={submit} className="border rounded-xl p-4 space-y-3 bg-surface shadow-sm">
+      <h2 className="font-semibold">Seguridad</h2>
+      <p className="text-sm text-muted">Cambia la contraseña de acceso al panel</p>
+      {msg && (
+        <p className={`text-sm p-2 rounded-lg ${msg.type === "ok" ? "bg-success-soft text-foreground" : "bg-danger-soft text-danger"}`}>
+          {msg.text}
+        </p>
+      )}
+      <input
+        type="password" autoComplete="current-password"
+        className="w-full border rounded-lg p-2 bg-surface placeholder:text-muted" placeholder="Contraseña actual"
+        value={current} onChange={(e) => setCurrent(e.target.value)} />
+      <input
+        type="password" autoComplete="new-password"
+        className="w-full border rounded-lg p-2 bg-surface placeholder:text-muted" placeholder="Nueva contraseña (mín. 8)"
+        value={next} onChange={(e) => setNext(e.target.value)} />
+      <input
+        type="password" autoComplete="new-password"
+        className="w-full border rounded-lg p-2 bg-surface placeholder:text-muted" placeholder="Confirmar nueva contraseña"
+        value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+      <button
+        type="submit" disabled={busy}
+        className="bg-accent text-accent-fg rounded-lg px-4 py-2 font-semibold disabled:opacity-50 hover:bg-accent-hover transition-colors">
+        {busy ? "Guardando…" : "Cambiar contraseña"}
+      </button>
+    </form>
   );
 }

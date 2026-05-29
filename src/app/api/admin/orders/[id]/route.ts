@@ -12,6 +12,32 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   if (status !== undefined && status !== "DELIVERED" && status !== "CANCELLED") {
     return NextResponse.json({ error: "Estado inválido" }, { status: 400 });
   }
+
+  // Cancelling returns the reserved stock to inventory (only once).
+  if (status === "CANCELLED") {
+    try {
+      const order = await prisma.$transaction(async (tx) => {
+        const existing = await tx.order.findUnique({ where: { id }, include: { items: true } });
+        if (!existing) throw new Error("not_found");
+        if (existing.status !== "CANCELLED") {
+          for (const it of existing.items) {
+            await tx.product.update({
+              where: { id: it.productId },
+              data: { stock: { increment: it.qty } },
+            });
+          }
+        }
+        return tx.order.update({ where: { id }, data: { status: "CANCELLED" } });
+      });
+      return NextResponse.json(order);
+    } catch (e) {
+      if (e instanceof Error && e.message === "not_found") {
+        return NextResponse.json({ error: "Pedido no encontrado" }, { status: 404 });
+      }
+      return NextResponse.json({ error: "No se pudo cancelar el pedido" }, { status: 400 });
+    }
+  }
+
   const data: any = {};
   if (status !== undefined) data.status = status;
   if (paid !== undefined) data.paid = Boolean(paid);

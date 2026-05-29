@@ -8,14 +8,16 @@ export async function GET(req: Request) {
   if (deny) return deny;
   const { searchParams } = new URL(req.url);
   const status = searchParams.get("status") ?? "PENDING";
-
-  const orders = await prisma.order.findMany({
-    where: { status: status as any },
-    include: { items: { include: { product: true } } },
-    orderBy: { createdAt: "asc" },
-  });
+  const paidParam = searchParams.get("paid");
+  const q = (searchParams.get("q") ?? "").trim();
 
   if (status === "PENDING") {
+    const orders = await prisma.order.findMany({
+      where: { status: "PENDING" },
+      include: { items: { include: { product: true } } },
+      orderBy: { createdAt: "asc" },
+    });
+
     const settings = await prisma.businessSettings.findUnique({ where: { id: 1 } });
     const shopLat = settings?.shopLat ?? null;
     const shopLng = settings?.shopLng ?? null;
@@ -30,6 +32,23 @@ export async function GET(req: Request) {
     const pickup = orders.filter((o) => o.type === "PICKUP");
     return NextResponse.json({ pickup, delivery, shopLat, shopLng });
   }
+
+  const where: any = { status: status as any };
+  if (paidParam === "true") where.paid = true;
+  if (paidParam === "false") where.paid = false;
+  if (q) {
+    where.OR = [
+      { code: { contains: q, mode: "insensitive" } },
+      { customerName: { contains: q, mode: "insensitive" } },
+    ];
+  }
+
+  const orders = await prisma.order.findMany({
+    where,
+    include: { items: { include: { product: true } } },
+    orderBy: { createdAt: "desc" },
+    take: 200,
+  });
 
   return NextResponse.json({ orders });
 }

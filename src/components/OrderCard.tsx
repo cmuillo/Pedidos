@@ -15,6 +15,7 @@ type Order = {
   distanceMeters: number | null;
   totalColones: number;
   paid: boolean;
+  createdAt?: string;
   items: OrderItem[];
 };
 
@@ -22,10 +23,12 @@ export default function OrderCard({
   order,
   sinpePhone,
   onChange,
+  readOnly = false,
 }: {
   order: Order;
   sinpePhone: string | null;
   onChange: () => void;
+  readOnly?: boolean;
 }) {
   async function patch(body: Record<string, unknown>) {
     await fetch(`/api/admin/orders/${order.id}`, {
@@ -52,8 +55,20 @@ export default function OrderCard({
         <div>
           <p className="font-semibold">{order.customerName}</p>
           <p className="text-xs text-muted font-mono">{order.code}</p>
+          {readOnly && order.createdAt && (
+            <p className="text-xs text-muted mt-0.5">
+              {new Date(order.createdAt).toLocaleString("es-CR")}
+            </p>
+          )}
         </div>
-        <span className="font-bold text-accent">{formatColones(order.totalColones)}</span>
+        <div className="text-right">
+          <span className="font-bold text-accent block">{formatColones(order.totalColones)}</span>
+          {readOnly && (
+            <span className="text-xs text-success font-medium">
+              {order.type === "DELIVERY" ? "🛵 Express" : "🏪 Recoger"} · ✓ Pagado
+            </span>
+          )}
+        </div>
       </div>
       <ul className="text-sm text-muted space-y-0.5">
         {order.items.map((i, idx) => (
@@ -63,9 +78,10 @@ export default function OrderCard({
       {order.addressText && (
         <p className="text-sm">📍 {order.addressText}</p>
       )}
-      {order.distanceMeters != null && (
+      {!readOnly && order.distanceMeters != null && (
         <p className="text-xs text-muted">A {(order.distanceMeters / 1000).toFixed(1)} km</p>
       )}
+      {!readOnly && (
       <div className="flex flex-wrap gap-2 pt-1">
         {order.lat != null && order.lng != null && (
           <a
@@ -93,7 +109,17 @@ export default function OrderCard({
           onClick={() => patch({ status: "DELIVERED" })}>
           ✓ Entregado
         </button>
+        <button
+          className="px-3 py-2 border border-danger text-danger rounded-lg text-sm font-medium hover:bg-danger-soft transition-colors"
+          onClick={() => {
+            if (confirm("¿Cancelar este pedido? Se devolverá el stock al inventario.")) {
+              patch({ status: "CANCELLED" });
+            }
+          }}>
+          ✕ Cancelar
+        </button>
       </div>
+      )}
     </div>
   );
 }
