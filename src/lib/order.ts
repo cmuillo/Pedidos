@@ -83,6 +83,17 @@ export async function persistOrder(input: {
   lat?: number | null;
   lng?: number | null;
 }) {
+  if (input.cart.length === 0) throw new Error("Carrito vacío");
+
+  // Fetch shop coords before opening transaction to keep tx window short
+  let distanceMeters: number | null = null;
+  if (input.type === "DELIVERY" && input.lat != null && input.lng != null) {
+    const settings = await prisma.businessSettings.findUnique({ where: { id: 1 } });
+    if (settings?.shopLat != null && settings?.shopLng != null) {
+      distanceMeters = haversineMeters(settings.shopLat, settings.shopLng, input.lat, input.lng);
+    }
+  }
+
   return prisma.$transaction(async (tx) => {
     const ids = input.cart.map((c) => c.productId);
     const products = await tx.product.findMany({ where: { id: { in: ids } } });
@@ -103,14 +114,6 @@ export async function persistOrder(input: {
       if (updated.count === 0) {
         const p = products.find((x) => x.id === d.id);
         throw new InsufficientStockError(p?.name ?? d.id);
-      }
-    }
-
-    let distanceMeters: number | null = null;
-    if (input.type === "DELIVERY" && input.lat != null && input.lng != null) {
-      const settings = await tx.businessSettings.findUnique({ where: { id: 1 } });
-      if (settings?.shopLat != null && settings?.shopLng != null) {
-        distanceMeters = haversineMeters(settings.shopLat, settings.shopLng, input.lat, input.lng);
       }
     }
 
