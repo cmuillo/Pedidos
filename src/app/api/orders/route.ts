@@ -4,12 +4,25 @@ import { isValidCRWhatsApp, normalizeCRWhatsApp } from "@/lib/validation";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(req: Request) {
+  let body: any;
   try {
-    const body = await req.json();
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "JSON inválido" }, { status: 400 });
+  }
+
+  try {
     const { cart, type, customerName, whatsapp, addressText, lat, lng } = body;
 
     if (!Array.isArray(cart) || cart.length === 0) {
       return NextResponse.json({ error: "Carrito vacío" }, { status: 400 });
+    }
+    const cartItems = cart.map((c: any) => ({
+      productId: typeof c?.productId === "string" ? c.productId : "",
+      qty: typeof c?.qty === "number" ? c.qty : 0,
+    }));
+    if (cartItems.some((c) => !c.productId || c.qty <= 0)) {
+      return NextResponse.json({ error: "Artículos del carrito inválidos" }, { status: 400 });
     }
     if (!customerName?.trim()) {
       return NextResponse.json({ error: "Nombre requerido" }, { status: 400 });
@@ -31,7 +44,7 @@ export async function POST(req: Request) {
     }
 
     const order = await persistOrder({
-      cart: cart.map((c: any) => ({ productId: c.productId, qty: c.qty })),
+      cart: cartItems,
       type,
       customerName: customerName.trim(),
       whatsapp: normalizeCRWhatsApp(whatsapp),
