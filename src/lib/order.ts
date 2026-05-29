@@ -34,25 +34,32 @@ export function buildOrderData(input: {
   whatsapp: string;
 }) {
   const byId = new Map(input.products.map((p) => [p.id, p]));
+
+  // Merge duplicate productIds in cart before validating
+  const merged = new Map<string, number>();
+  for (const line of input.cart) {
+    if (line.qty <= 0) throw new Error("Cantidad inválida");
+    merged.set(line.productId, (merged.get(line.productId) ?? 0) + line.qty);
+  }
+
   const items: CartLine[] = [];
   const decrements: { id: string; qty: number }[] = [];
 
-  for (const line of input.cart) {
-    if (line.qty <= 0) throw new Error("Cantidad inválida");
-    const product = byId.get(line.productId);
+  for (const [productId, qty] of merged) {
+    const product = byId.get(productId);
     if (!product || !product.active) {
-      throw new Error(`Producto no disponible: ${line.productId}`);
+      throw new Error(`Producto no disponible: ${productId}`);
     }
-    if (line.qty > product.stock) {
+    if (qty > product.stock) {
       throw new InsufficientStockError(product.name);
     }
     items.push({
       productId: product.id,
       nameSnapshot: product.name,
       unitPrice: product.priceColones,
-      qty: line.qty,
+      qty,
     });
-    decrements.push({ id: product.id, qty: line.qty });
+    decrements.push({ id: product.id, qty });
   }
 
   return { items, decrements, totalColones: calcTotal(items) };

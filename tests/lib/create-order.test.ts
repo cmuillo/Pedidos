@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildOrderData, InsufficientStockError } from "@/lib/order";
+import { buildOrderData, InsufficientStockError, generateOrderCode } from "@/lib/order";
 
 describe("buildOrderData", () => {
   const products = [
@@ -46,5 +46,54 @@ describe("buildOrderData", () => {
         whatsapp: "50688887777",
       })
     ).toThrow();
+  });
+
+  it("throws when qty is 0 or negative", () => {
+    expect(() =>
+      buildOrderData({
+        cart: [{ productId: "a", qty: 0 }],
+        products,
+        type: "PICKUP",
+        customerName: "Ana",
+        whatsapp: "50688887777",
+      })
+    ).toThrow("Cantidad inválida");
+  });
+
+  it("throws when product is inactive", () => {
+    const withInactive = [
+      ...products,
+      { id: "c", name: "Fresa", priceColones: 800, stock: 10, active: false },
+    ];
+    expect(() =>
+      buildOrderData({
+        cart: [{ productId: "c", qty: 1 }],
+        products: withInactive,
+        type: "PICKUP",
+        customerName: "Ana",
+        whatsapp: "50688887777",
+      })
+    ).toThrow("Producto no disponible");
+  });
+
+  it("merges duplicate productIds and validates combined qty against stock", () => {
+    // stock for "b" is 1; two lines each requesting 1 = total 2 → should throw
+    expect(() =>
+      buildOrderData({
+        cart: [{ productId: "b", qty: 1 }, { productId: "b", qty: 1 }],
+        products,
+        type: "PICKUP",
+        customerName: "Ana",
+        whatsapp: "50688887777",
+      })
+    ).toThrow(InsufficientStockError);
+  });
+});
+
+describe("generateOrderCode", () => {
+  it("generates code with H prefix and 4-digit suffix", () => {
+    const code = generateOrderCode(new Date("2026-05-29T12:00:00Z"));
+    expect(code).toMatch(/^H\d{6}-\d{4}$/);
+    expect(code.startsWith("H260529")).toBe(true);
   });
 });
