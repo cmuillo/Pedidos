@@ -14,7 +14,7 @@ export async function PATCH(req: Request) {
   if (deny) return deny;
   let body: any;
   try { body = await req.json(); } catch { return NextResponse.json({ error: "JSON inválido" }, { status: 400 }); }
-  const allowed = ["businessName", "logoBase64", "deliveryEnabled", "shopLat", "shopLng", "sinpeNumber"];
+  const allowed = ["name", "logoBase64", "deliveryEnabled", "shopLat", "shopLng", "sinpePhone", "whatsappFrom"];
   const data: any = {};
   for (const key of allowed) {
     if (body[key] !== undefined) data[key] = body[key];
