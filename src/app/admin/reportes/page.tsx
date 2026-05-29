@@ -77,21 +77,30 @@ export default function ReportesPage() {
           </div>
 
           <div className="border rounded-xl p-4 bg-surface shadow-sm">
-            <p className="font-semibold mb-3">Sabores más vendidos</p>
+            <p className="font-semibold mb-3">Resumen por sabores</p>
             {report.topFlavors.length === 0 ? (
               <p className="text-muted text-sm">Sin datos en este período</p>
             ) : (
-              <ol className="space-y-2">
-                {report.topFlavors.map((t, i) => (
-                  <li key={i} className="flex justify-between items-center">
-                    <span className="text-sm"><span className="text-muted mr-2">{i + 1}.</span>{t.name}</span>
-                    <div className="text-right">
-                      <span className="text-sm font-medium">{t.qty} u</span>
-                      <span className="text-xs text-muted ml-2">{formatColones(t.revenue)}</span>
-                    </div>
-                  </li>
-                ))}
-              </ol>
+              <>
+                <ol className="space-y-2">
+                  {report.topFlavors.map((t, i) => (
+                    <li key={i} className="flex justify-between items-center">
+                      <span className="text-sm"><span className="text-muted mr-2">{i + 1}.</span>{t.name}</span>
+                      <div className="text-right">
+                        <span className="text-sm font-medium">{t.qty} u</span>
+                        <span className="text-xs text-muted ml-2">{formatColones(t.revenue)}</span>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+                <div className="flex justify-between items-center border-t mt-3 pt-3 font-semibold">
+                  <span className="text-sm">Total</span>
+                  <div className="text-right">
+                    <span className="text-sm">{report.topFlavors.reduce((s, t) => s + t.qty, 0)} u</span>
+                    <span className="text-sm text-accent ml-2">{formatColones(report.topFlavors.reduce((s, t) => s + t.revenue, 0))}</span>
+                  </div>
+                </div>
+              </>
             )}
           </div>
         </div>
