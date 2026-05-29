@@ -36,18 +36,18 @@ export default function PedidosPage() {
     <div className="space-y-4">
       <div className="flex gap-2">
         <button
-          className={`flex-1 py-3 rounded border font-medium ${tab === "PICKUP" ? "bg-pink-600 text-white" : ""}`}
+          className={`flex-1 py-3 rounded-lg border font-medium transition-colors ${tab === "PICKUP" ? "bg-accent text-accent-fg border-accent" : "bg-surface hover:bg-surface-2"}`}
           onClick={() => setTab("PICKUP")}>
-          🏪 Recoger {pickup.length > 0 && <span className="ml-1 bg-white text-pink-600 rounded-full px-1.5 text-xs">{pickup.length}</span>}
+          🏪 Recoger {pickup.length > 0 && <span className="ml-1 bg-surface text-accent rounded-full px-1.5 text-xs">{pickup.length}</span>}
         </button>
         <button
-          className={`flex-1 py-3 rounded border font-medium ${tab === "DELIVERY" ? "bg-pink-600 text-white" : ""}`}
+          className={`flex-1 py-3 rounded-lg border font-medium transition-colors ${tab === "DELIVERY" ? "bg-accent text-accent-fg border-accent" : "bg-surface hover:bg-surface-2"}`}
           onClick={() => setTab("DELIVERY")}>
-          🛵 Express {delivery.length > 0 && <span className="ml-1 bg-white text-pink-600 rounded-full px-1.5 text-xs">{delivery.length}</span>}
+          🛵 Express {delivery.length > 0 && <span className="ml-1 bg-surface text-accent rounded-full px-1.5 text-xs">{delivery.length}</span>}
         </button>
       </div>
       {orders.length === 0 ? (
-        <p className="text-center text-gray-400 py-8">Sin pedidos pendientes</p>
+        <p className="text-center text-muted py-8">Sin pedidos pendientes</p>
       ) : (
         orders.map((o) => <OrderCard key={o.id} order={o} sinpePhone={sinpe} onChange={load} />)
       )}

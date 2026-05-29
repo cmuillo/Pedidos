@@ -10,11 +10,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
   return (
     <div className="min-h-screen">
-      <nav className="flex gap-4 p-4 border-b overflow-x-auto text-sm">
-        <Link href="/admin/pedidos">Pedidos</Link>
-        <Link href="/admin/inventario">Inventario</Link>
-        <Link href="/admin/empresa">Empresa</Link>
-        <Link href="/admin/reportes">Reportes</Link>
+      <nav className="flex gap-4 p-4 border-b overflow-x-auto text-sm bg-surface">
+        <Link href="/admin/pedidos" className="hover:text-accent transition-colors">Pedidos</Link>
+        <Link href="/admin/inventario" className="hover:text-accent transition-colors">Inventario</Link>
+        <Link href="/admin/empresa" className="hover:text-accent transition-colors">Empresa</Link>
+        <Link href="/admin/reportes" className="hover:text-accent transition-colors">Reportes</Link>
       </nav>
       <main className="p-4">{children}</main>
     </div>

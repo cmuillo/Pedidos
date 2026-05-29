@@ -47,6 +47,23 @@ export default function LocationPicker({
       });
       mapRef.current = map;
       markerRef.current = marker;
+
+      // Center on the user's current location when no position is preselected.
+      if (!value && typeof navigator !== "undefined" && navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (geo) => {
+            if (cancelled) return;
+            const here = { lat: geo.coords.latitude, lng: geo.coords.longitude };
+            map.setView([here.lat, here.lng], 16);
+            marker.setLatLng([here.lat, here.lng]);
+            onChange(here);
+          },
+          () => {
+            // Permission denied or unavailable: keep the default view.
+          },
+          { enableHighAccuracy: true, timeout: 8000 }
+        );
+      }
     })();
     return () => {
       cancelled = true;

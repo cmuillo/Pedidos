@@ -45,15 +45,15 @@ export default function OrderCard({
   });
 
   return (
-    <div className="border rounded-lg p-4 space-y-3">
+    <div className="border rounded-xl p-4 space-y-3 bg-surface shadow-sm">
       <div className="flex justify-between items-start">
         <div>
           <p className="font-semibold">{order.customerName}</p>
-          <p className="text-xs text-gray-500 font-mono">{order.code}</p>
+          <p className="text-xs text-muted font-mono">{order.code}</p>
         </div>
-        <span className="font-bold text-pink-600">{formatColones(order.totalColones)}</span>
+        <span className="font-bold text-accent">{formatColones(order.totalColones)}</span>
       </div>
-      <ul className="text-sm text-gray-600 space-y-0.5">
+      <ul className="text-sm text-muted space-y-0.5">
         {order.items.map((i, idx) => (
           <li key={idx}>• {i.qty}× {i.nameSnapshot} ({formatColones(i.unitPrice * i.qty)})</li>
         ))}
@@ -62,12 +62,12 @@ export default function OrderCard({
         <p className="text-sm">📍 {order.addressText}</p>
       )}
       {order.distanceMeters != null && (
-        <p className="text-xs text-gray-500">A {(order.distanceMeters / 1000).toFixed(1)} km</p>
+        <p className="text-xs text-muted">A {(order.distanceMeters / 1000).toFixed(1)} km</p>
       )}
       <div className="flex flex-wrap gap-2 pt-1">
         {order.lat != null && order.lng != null && (
           <a
-            className="px-3 py-2 border rounded text-sm font-medium"
+            className="px-3 py-2 border rounded-lg text-sm font-medium hover:bg-surface-2 transition-colors"
             href={buildNavLink(order.lat, order.lng)}
             target="_blank"
             rel="noreferrer">
@@ -75,19 +75,19 @@ export default function OrderCard({
           </a>
         )}
         <a
-          className="px-3 py-2 border rounded text-sm font-medium"
+          className="px-3 py-2 border rounded-lg text-sm font-medium hover:bg-surface-2 transition-colors"
           href={waLink}
           target="_blank"
           rel="noreferrer">
           💬 WhatsApp
         </a>
         <button
-          className={`px-3 py-2 border rounded text-sm font-medium ${order.paid ? "bg-green-600 text-white" : ""}`}
+          className={`px-3 py-2 border rounded-lg text-sm font-medium transition-colors ${order.paid ? "bg-success text-accent-fg border-success" : "hover:bg-surface-2"}`}
           onClick={() => patch({ paid: !order.paid })}>
           {order.paid ? "✓ Pagado" : "Marcar pagado"}
         </button>
         <button
-          className="px-3 py-2 bg-pink-600 text-white rounded text-sm font-medium"
+          className="px-3 py-2 bg-accent text-accent-fg rounded-lg text-sm font-medium hover:bg-accent-hover transition-colors"
           onClick={() => patch({ status: "DELIVERED" })}>
           ✓ Entregado
         </button>

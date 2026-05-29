@@ -44,49 +44,49 @@ export default function EmpresaPage() {
     reader.readAsDataURL(file);
   }
 
-  if (!s) return <p className="text-gray-500">Cargando…</p>;
+  if (!s) return <p className="text-muted">Cargando…</p>;
 
   return (
     <div className="space-y-4 max-w-lg">
-      {saving && <p className="text-sm text-pink-600">Guardando…</p>}
+      {saving && <p className="text-sm text-accent">Guardando…</p>}
 
-      <div className="border rounded-lg p-4 space-y-3">
+      <div className="border rounded-xl p-4 space-y-3 bg-surface shadow-sm">
         <h2 className="font-semibold">Datos del negocio</h2>
         <div>
-          <label className="block text-sm text-gray-600 mb-1">Nombre del negocio</label>
+          <label className="block text-sm text-muted mb-1">Nombre del negocio</label>
           <input
-            className="w-full border rounded p-2"
+            className="w-full border rounded-lg p-2 bg-surface"
             defaultValue={s.name}
             onBlur={(e) => { if (e.target.value.trim() !== s.name) save({ name: e.target.value.trim() }); }} />
         </div>
         <div>
-          <label className="block text-sm text-gray-600 mb-1">Logo</label>
+          <label className="block text-sm text-muted mb-1">Logo</label>
           {s.logoBase64 && (
             <img src={s.logoBase64} alt="logo" className="h-16 w-16 object-contain rounded mb-2" />
           )}
           <input type="file" accept="image/*" onChange={onLogo} />
         </div>
         <div>
-          <label className="block text-sm text-gray-600 mb-1">Teléfono SINPE</label>
+          <label className="block text-sm text-muted mb-1">Teléfono SINPE</label>
           <input
-            className="w-full border rounded p-2" placeholder="88880000"
+            className="w-full border rounded-lg p-2 bg-surface placeholder:text-muted" placeholder="88880000"
             defaultValue={s.sinpePhone ?? ""}
             onBlur={(e) => save({ sinpePhone: e.target.value || null })} />
         </div>
         <div>
-          <label className="block text-sm text-gray-600 mb-1">WhatsApp de la tienda (para mensajes)</label>
+          <label className="block text-sm text-muted mb-1">WhatsApp de la tienda (para mensajes)</label>
           <input
-            className="w-full border rounded p-2" placeholder="50688880000"
+            className="w-full border rounded-lg p-2 bg-surface placeholder:text-muted" placeholder="50688880000"
             defaultValue={s.whatsappFrom ?? ""}
             onBlur={(e) => save({ whatsappFrom: e.target.value || null })} />
         </div>
       </div>
 
-      <div className="border rounded-lg p-4">
+      <div className="border rounded-xl p-4 bg-surface shadow-sm">
         <label className="flex items-center gap-3 cursor-pointer">
           <input
             type="checkbox"
-            className="w-5 h-5"
+            className="w-5 h-5 accent-accent"
             checked={s.deliveryEnabled}
             onChange={(e) => {
               setS({ ...s, deliveryEnabled: e.target.checked });
@@ -94,14 +94,14 @@ export default function EmpresaPage() {
             }} />
           <div>
             <p className="font-semibold">Express / Delivery activo</p>
-            <p className="text-sm text-gray-500">Desactiva para aceptar solo pedidos para recoger</p>
+            <p className="text-sm text-muted">Desactiva para aceptar solo pedidos para recoger</p>
           </div>
         </label>
       </div>
 
-      <div className="border rounded-lg p-4 space-y-2">
+      <div className="border rounded-xl p-4 space-y-2 bg-surface shadow-sm">
         <p className="font-semibold">Ubicación de la tienda</p>
-        <p className="text-sm text-gray-500">Usado para calcular distancias de delivery</p>
+        <p className="text-sm text-muted">Usado para calcular distancias de delivery</p>
         <LocationPicker
           value={s.shopLat != null && s.shopLng != null ? { lat: s.shopLat, lng: s.shopLng } : null}
           onChange={(pos) => save({ shopLat: pos.lat, shopLng: pos.lng })} />
