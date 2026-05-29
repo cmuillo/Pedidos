@@ -18,7 +18,7 @@ describe("buildOnTheWayLink", () => {
     expect(decoded).toContain("ABC123");
     expect(decoded).toContain("Vainilla");
     expect(decoded).toContain("₡2.000");
-    expect(decoded).toContain("88880000");
+    expect(decoded).toContain("a este número");
     expect(decoded).toContain("Muchas gracias");
   });
 

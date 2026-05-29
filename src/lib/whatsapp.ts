@@ -15,7 +15,7 @@ export function buildOnTheWayLink(params: {
     .map((i) => `• ${i.qty}x ${i.nameSnapshot} (${formatColones(i.unitPrice * i.qty)})`)
     .join("\n");
   const sinpe = params.sinpePhone
-    ? `\nSi el pago es por SINPE, envía el comprobante a este número: ${params.sinpePhone}.`
+    ? `\nSi el pago es por SINPE, envía el comprobante a este número.`
     : "";
   const greeting = params.type === "PICKUP"
     ? `Hola ${params.customerName}, ¡te esperamos para que lo retires! 🍦`
