@@ -1,3 +1,6 @@
 export function formatColones(amount: number): string {
-  return "₡" + Math.round(amount).toLocaleString("de-DE");
+  const rounded = Math.round(amount);
+  const abs = Math.abs(rounded);
+  const formatted = abs.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  return (rounded < 0 ? "-₡" : "₡") + formatted;
 }

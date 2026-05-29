@@ -6,9 +6,9 @@ describe("haversineMeters", () => {
     expect(haversineMeters(9.93, -84.08, 9.93, -84.08)).toBe(0);
   });
 
-  it("computes ~1113km between 10 degrees of longitude at equator-ish", () => {
+  it("computes ~1095km between 10 degrees of longitude at latitude 9.93", () => {
     const d = haversineMeters(9.93, -84.08, 9.93, -74.08);
-    expect(d).toBeGreaterThan(1_000_000);
-    expect(d).toBeLessThan(1_200_000);
+    const expected = 1_095_250;
+    expect(Math.abs(d - expected)).toBeLessThan(expected * 0.01); // within 1%
   });
 });
