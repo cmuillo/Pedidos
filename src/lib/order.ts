@@ -12,6 +12,24 @@ export function calcTotal(lines: CartLine[]): number {
   return lines.reduce((sum, l) => sum + l.unitPrice * l.qty, 0);
 }
 
+/**
+ * Validate a discount against an order total.
+ * A discount must be an integer between 0 and the total (inclusive):
+ * it can never be greater than the total it applies to.
+ */
+export function isValidDiscount(total: number, discount: number): boolean {
+  return (
+    Number.isInteger(discount) &&
+    discount >= 0 &&
+    discount <= total
+  );
+}
+
+/** Net amount charged after applying a discount, never below 0. */
+export function netTotal(total: number, discount: number): number {
+  return Math.max(0, total - discount);
+}
+
 export type OrderType = "PICKUP" | "DELIVERY";
 
 export class InsufficientStockError extends Error {

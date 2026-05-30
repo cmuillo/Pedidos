@@ -52,6 +52,7 @@ model Order {
   lng            Float?
   distanceMeters Float?
   totalColones   Int
+  discountColones Int        @default(0)
   status         OrderStatus @default(PENDING)
   paid           Boolean     @default(false)
   createdAt      DateTime    @default(now())
