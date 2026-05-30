@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { formatColones } from "@/lib/money";
 import { netTotal } from "@/lib/order";
-import { buildOnTheWayLink, buildNavLink } from "@/lib/whatsapp";
+import { buildOnTheWayLink, buildReceivedLink, buildNavLink } from "@/lib/whatsapp";
 import ConfirmDialog from "@/components/ConfirmDialog";
 
 type OrderItem = { nameSnapshot: string; qty: number; unitPrice: number };
@@ -19,6 +19,7 @@ type Order = {
   totalColones: number;
   discountColones?: number;
   paid: boolean;
+  messageStage?: number;
   createdAt?: string;
   items: OrderItem[];
 };
@@ -67,22 +68,58 @@ export default function OrderCard({
     setSavingDiscount(false);
   }
 
-  const waLink = buildOnTheWayLink({
-    whatsapp: order.whatsapp,
-    customerName: order.customerName,
-    code: order.code,
-    type: order.type,
-    items: order.items,
-    totalColones: net,
-    sinpePhone: sinpePhone ?? null,
-  });
+  const messageStage = order.messageStage ?? 0;
+
+  // WhatsApp send flow:
+  //  - stage 0 (nuevo): primer toque envía el mensaje de pago y pasa a amarillo.
+  //  - stage 1: segundo toque envía el mensaje de "en camino/recoger" sin pedir
+  //    el pago de nuevo y pasa a verde.
+  //  - stage 2: ya enviado dos veces; reenvía el mismo mensaje sin volver a pedir pago.
+  function waLinkForStage(stage: number): string {
+    if (stage <= 0) {
+      return buildReceivedLink({
+        whatsapp: order.whatsapp,
+        customerName: order.customerName,
+        code: order.code,
+        items: order.items,
+        totalColones: net,
+      });
+    }
+    return buildOnTheWayLink({
+      whatsapp: order.whatsapp,
+      customerName: order.customerName,
+      code: order.code,
+      type: order.type,
+      items: order.items,
+      totalColones: net,
+      sinpePhone: sinpePhone ?? null,
+      includePayment: false,
+    });
+  }
+
+  function sendWhatsapp() {
+    window.open(waLinkForStage(messageStage), "_blank", "noopener,noreferrer");
+    const next = Math.min(messageStage + 1, 2);
+    if (next !== messageStage) void patch({ messageStage: next });
+  }
+
+  const waButtonClass =
+    messageStage >= 2
+      ? "bg-success text-accent-fg border-success"
+      : messageStage === 1
+        ? "bg-warning text-white border-warning"
+        : "hover:bg-surface-2";
 
   return (
     <div className="relative border rounded-xl p-4 space-y-3 bg-surface shadow-sm">
       <div className="flex justify-between items-start">
         <div>
           <p className="font-semibold">{order.customerName}</p>
-          <p className="text-xs text-muted font-mono">{order.code}</p>
+          {!readOnly && messageStage === 0 ? (
+            <span className="inline-block text-xs font-mono px-2 py-0.5 rounded bg-success text-accent-fg">{order.code}</span>
+          ) : (
+            <p className="text-xs text-muted font-mono">{order.code}</p>
+          )}
           {readOnly && order.createdAt && (
             <p className="text-xs text-muted mt-0.5">
               {new Date(order.createdAt).toLocaleString("es-CR")}
@@ -158,18 +195,17 @@ export default function OrderCard({
             </svg>
           </a>
         )}
-        <a
-          aria-label="WhatsApp"
-          title="WhatsApp"
-          className="w-10 h-10 flex items-center justify-center border rounded-lg hover:bg-surface-2 transition-colors"
-          href={waLink}
-          target="_blank"
-          rel="noreferrer">
+        <button
+          type="button"
+          aria-label="Enviar mensaje de WhatsApp"
+          title={messageStage === 0 ? "Enviar confirmación y solicitud de pago" : "Enviar mensaje de seguimiento"}
+          className={`w-10 h-10 flex items-center justify-center border rounded-lg transition-colors ${waButtonClass}`}
+          onClick={sendWhatsapp}>
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
             fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
           </svg>
-        </a>
+        </button>
         <button
           className={`px-3 py-2 border rounded-lg text-sm font-medium transition-colors ${order.paid ? "bg-success text-accent-fg border-success" : "hover:bg-surface-2"}`}
           onClick={() => patch({ paid: !order.paid })}>

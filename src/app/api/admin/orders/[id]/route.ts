@@ -9,9 +9,12 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const { id } = await params;
   let body: any;
   try { body = await req.json(); } catch { return NextResponse.json({ error: "JSON inválido" }, { status: 400 }); }
-  const { status, paid, discountColones } = body;
+  const { status, paid, discountColones, messageStage } = body;
   if (status !== undefined && status !== "DELIVERED" && status !== "CANCELLED") {
     return NextResponse.json({ error: "Estado inválido" }, { status: 400 });
+  }
+  if (messageStage !== undefined && (!Number.isInteger(messageStage) || messageStage < 0 || messageStage > 2)) {
+    return NextResponse.json({ error: "messageStage inválido" }, { status: 400 });
   }
 
   // Cancelling returns the reserved stock to inventory (only once).
@@ -43,6 +46,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const data: any = {};
   if (status !== undefined) data.status = status;
   if (paid !== undefined) data.paid = Boolean(paid);
+  if (messageStage !== undefined) data.messageStage = messageStage;
   if (discountColones !== undefined) {
     const existing = await prisma.order.findUnique({ where: { id }, select: { totalColones: true } });
     if (!existing) return NextResponse.json({ error: "Pedido no encontrado" }, { status: 404 });

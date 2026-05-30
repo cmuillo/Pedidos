@@ -55,6 +55,7 @@ model Order {
   discountColones Int        @default(0)
   status         OrderStatus @default(PENDING)
   paid           Boolean     @default(false)
+  messageStage   Int         @default(0)
   createdAt      DateTime    @default(now())
   items          OrderItem[]
 
