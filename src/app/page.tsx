@@ -1,5 +1,6 @@
 "use client";
 import { useState, useCallback, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { CartProvider, useCart } from "@/components/CartContext";
 import MenuGrid from "@/components/MenuGrid";
 import CheckoutForm, { CheckoutFormHandle } from "@/components/CheckoutForm";
@@ -18,14 +19,33 @@ function HomeContent() {
   const [orderCode, setOrderCode] = useState("");
   const { items } = useCart();
   const checkoutRef = useRef<CheckoutFormHandle>(null);
+  const router = useRouter();
+  // When launched from the admin orders screen (?return=/admin/pedidos),
+  // go back there after the confirmation instead of resetting to step 1.
+  const returnTo = useRef<string | null>(null);
 
   const handleBusiness = useCallback((b: Business) => setBusiness(b), []);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    const value = new URLSearchParams(window.location.search).get("return");
+    // Only allow same-app relative paths to avoid open-redirects.
+    if (value && value.startsWith("/") && !value.startsWith("//")) {
+      returnTo.current = value;
+    }
+  }, []);
+
+  useEffect(() => {
     if (step !== 3) return;
-    const t = setTimeout(() => setStep(1), 3000);
+    const t = setTimeout(() => {
+      if (returnTo.current) {
+        router.push(returnTo.current);
+      } else {
+        setStep(1);
+      }
+    }, 3000);
     return () => clearTimeout(t);
-  }, [step]);
+  }, [step, router]);
 
   const cartCount = items.reduce((s, i) => s + i.qty, 0);
 
