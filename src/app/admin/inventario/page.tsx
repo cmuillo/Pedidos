@@ -110,7 +110,7 @@ export default function InventarioPage() {
       {products
         .filter((p) => filter === "all" || (filter === "active" ? p.active : !p.active))
         .map((p) => (
-        <div key={p.id} className="border rounded-xl p-4 bg-surface shadow-sm">
+        <div key={p.id} className="relative border rounded-xl p-4 bg-surface shadow-sm">
           {editingId === p.id ? (
             <div className="space-y-2">
               <input
@@ -138,7 +138,7 @@ export default function InventarioPage() {
             <span className="font-semibold">{p.name}</span>
             <span className="text-muted">{formatColones(p.priceColones)}</span>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 pr-20">
             <label className="text-sm text-muted">Stock:</label>
             <input
               className="w-20 border rounded-lg p-1 text-sm bg-surface" type="number" defaultValue={p.stock} min={0}
@@ -151,15 +151,31 @@ export default function InventarioPage() {
               onClick={() => patch(p.id, { active: !p.active })}>
               {p.active ? "Activo" : "Inactivo"}
             </button>
+          </div>
+          <div className="absolute bottom-2 right-2 flex items-center gap-1">
             <button
-              className="px-2 py-1 border rounded-lg text-sm hover:bg-surface-2 ml-auto transition-colors"
+              aria-label="Editar"
+              title="Editar"
+              className="w-8 h-8 flex items-center justify-center border rounded-lg hover:bg-surface-2 transition-colors"
               onClick={() => startEdit(p)}>
-              Editar
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 20h9" />
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+              </svg>
             </button>
             <button
-              className="px-2 py-1 border rounded-lg text-sm text-danger hover:bg-danger-soft transition-colors"
+              aria-label="Eliminar"
+              title="Eliminar"
+              className="w-8 h-8 flex items-center justify-center border rounded-lg text-danger hover:bg-danger-soft transition-colors"
               onClick={() => remove(p.id)}>
-              Eliminar
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 6h18" />
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                <line x1="10" y1="11" x2="10" y2="17" />
+                <line x1="14" y1="11" x2="14" y2="17" />
+              </svg>
             </button>
           </div>
           </>
