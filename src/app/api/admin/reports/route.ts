@@ -19,7 +19,7 @@ export async function GET(req: Request) {
     include: { items: true },
   });
 
-  const totalRevenue = orders.reduce((sum, o) => sum + o.totalColones, 0);
+  const totalRevenue = orders.reduce((sum, o) => sum + Math.max(0, o.totalColones - (o.discountColones ?? 0)), 0);
   const totalOrders = orders.length;
 
   const flavorMap = new Map<string, { name: string; qty: number; revenue: number }>();

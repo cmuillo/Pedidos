@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { formatColones } from "@/lib/money";
+import ConfirmDialog from "@/components/ConfirmDialog";
 
 type Product = { id: string; name: string; priceColones: number; stock: number; active: boolean };
 
@@ -11,6 +12,7 @@ export default function InventarioPage() {
   const [filter, setFilter] = useState<"all" | "active" | "inactive">("all");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({ name: "", priceColones: "" });
+  const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
 
   async function load() {
     const res = await fetch("/api/admin/products", { cache: "no-store" });
@@ -43,7 +45,6 @@ export default function InventarioPage() {
   }
 
   async function remove(id: string) {
-    if (!confirm("¿Eliminar este producto?")) return;
     await fetch(`/api/admin/products/${id}`, { method: "DELETE" });
     load();
   }
@@ -168,7 +169,7 @@ export default function InventarioPage() {
               aria-label="Eliminar"
               title="Eliminar"
               className="w-8 h-8 flex items-center justify-center border rounded-lg text-danger hover:bg-danger-soft transition-colors"
-              onClick={() => remove(p.id)}>
+              onClick={() => setDeleteTarget(p)}>
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
                 fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M3 6h18" />
@@ -182,6 +183,23 @@ export default function InventarioPage() {
           )}
         </div>
       ))}
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        title="¿Eliminar este producto?"
+        message={
+          deleteTarget
+            ? `Se eliminará "${deleteTarget.name}" definitivamente. El historial de pedidos se conserva.`
+            : undefined
+        }
+        confirmLabel="Eliminar"
+        cancelLabel="Cancelar"
+        onConfirm={() => {
+          if (deleteTarget) remove(deleteTarget.id);
+          setDeleteTarget(null);
+        }}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }

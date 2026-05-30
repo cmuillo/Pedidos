@@ -1,6 +1,9 @@
 "use client";
+import { useState } from "react";
 import { formatColones } from "@/lib/money";
+import { netTotal } from "@/lib/order";
 import { buildOnTheWayLink, buildNavLink } from "@/lib/whatsapp";
+import ConfirmDialog from "@/components/ConfirmDialog";
 
 type OrderItem = { nameSnapshot: string; qty: number; unitPrice: number };
 type Order = {
@@ -14,6 +17,7 @@ type Order = {
   lng: number | null;
   distanceMeters: number | null;
   totalColones: number;
+  discountColones?: number;
   paid: boolean;
   createdAt?: string;
   items: OrderItem[];
@@ -30,6 +34,13 @@ export default function OrderCard({
   onChange: () => void;
   readOnly?: boolean;
 }) {
+  const [confirmCancel, setConfirmCancel] = useState(false);
+  const discount = order.discountColones ?? 0;
+  const net = netTotal(order.totalColones, discount);
+  const [discountInput, setDiscountInput] = useState(discount > 0 ? String(discount) : "");
+  const [discountError, setDiscountError] = useState<string | null>(null);
+  const [savingDiscount, setSavingDiscount] = useState(false);
+
   async function patch(body: Record<string, unknown>) {
     await fetch(`/api/admin/orders/${order.id}`, {
       method: "PATCH",
@@ -39,13 +50,30 @@ export default function OrderCard({
     onChange();
   }
 
+  async function applyDiscount() {
+    const trimmed = discountInput.trim();
+    const value = trimmed === "" ? 0 : Number(trimmed);
+    if (!Number.isInteger(value) || value < 0) {
+      setDiscountError("Ingresa un descuento válido");
+      return;
+    }
+    if (value > order.totalColones) {
+      setDiscountError("El descuento no puede ser mayor al total");
+      return;
+    }
+    setDiscountError(null);
+    setSavingDiscount(true);
+    await patch({ discountColones: value });
+    setSavingDiscount(false);
+  }
+
   const waLink = buildOnTheWayLink({
     whatsapp: order.whatsapp,
     customerName: order.customerName,
     code: order.code,
     type: order.type,
     items: order.items,
-    totalColones: order.totalColones,
+    totalColones: net,
     sinpePhone: sinpePhone ?? null,
   });
 
@@ -62,7 +90,13 @@ export default function OrderCard({
           )}
         </div>
         <div className="text-right">
-          <span className="font-bold text-accent block">{formatColones(order.totalColones)}</span>
+          {discount > 0 && (
+            <span className="text-xs text-muted line-through block">{formatColones(order.totalColones)}</span>
+          )}
+          <span className="font-bold text-accent block">{formatColones(net)}</span>
+          {discount > 0 && (
+            <span className="text-xs text-success block">Descuento -{formatColones(discount)}</span>
+          )}
           {readOnly && (
             <span className="text-xs text-success font-medium">
               {order.type === "DELIVERY" ? "🛵 Express" : "🏪 Recoger"} · ✓ Pagado
@@ -80,6 +114,30 @@ export default function OrderCard({
       )}
       {!readOnly && order.distanceMeters != null && (
         <p className="text-xs text-muted">A {(order.distanceMeters / 1000).toFixed(1)} km</p>
+      )}
+      {!readOnly && (
+        <div className="space-y-1 pt-1">
+          <div className="flex items-center gap-2">
+            <label htmlFor={`discount-${order.id}`} className="text-sm text-muted whitespace-nowrap">Descuento ₡</label>
+            <input
+              id={`discount-${order.id}`}
+              type="number"
+              min={0}
+              max={order.totalColones}
+              inputMode="numeric"
+              placeholder="0"
+              className="flex-1 min-w-0 border rounded-lg px-3 py-2 text-sm bg-surface placeholder:text-muted"
+              value={discountInput}
+              onChange={(e) => { setDiscountInput(e.target.value); setDiscountError(null); }} />
+            <button
+              className="px-3 py-2 border rounded-lg text-sm font-medium hover:bg-surface-2 transition-colors disabled:opacity-50"
+              disabled={savingDiscount}
+              onClick={applyDiscount}>
+              Aplicar
+            </button>
+          </div>
+          {discountError && <p className="text-xs text-danger">{discountError}</p>}
+        </div>
       )}
       {!readOnly && (
       <div className="flex flex-wrap gap-2 pt-1 pr-10">
@@ -129,11 +187,7 @@ export default function OrderCard({
           aria-label="Cancelar pedido"
           title="Cancelar pedido (devuelve el stock)"
           className="absolute bottom-3 right-3 w-9 h-9 flex items-center justify-center rounded-lg text-danger hover:bg-danger-soft transition-colors"
-          onClick={() => {
-            if (confirm("¿Cancelar este pedido? Se devolverá el stock al inventario.")) {
-              patch({ status: "CANCELLED" });
-            }
-          }}>
+          onClick={() => setConfirmCancel(true)}>
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
             fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 6h18" />
@@ -143,6 +197,18 @@ export default function OrderCard({
           </svg>
         </button>
       )}
+      <ConfirmDialog
+        open={confirmCancel}
+        title="¿Cancelar este pedido?"
+        message="Se devolverá el stock al inventario."
+        confirmLabel="Cancelar pedido"
+        cancelLabel="Volver"
+        onConfirm={() => {
+          setConfirmCancel(false);
+          patch({ status: "CANCELLED" });
+        }}
+        onCancel={() => setConfirmCancel(false)}
+      />
     </div>
   );
 }

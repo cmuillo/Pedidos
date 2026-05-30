@@ -1,7 +1,15 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import OrderCard from "@/components/OrderCard";
 import { haversineMeters } from "@/lib/distance";
+import { newOrderIds } from "@/lib/notifications";
+import {
+  unlockAudio,
+  playBell,
+  setOrderBadge,
+  requestNotificationPermission,
+  showOrderNotification,
+} from "@/lib/alerts";
 
 type Pos = { lat: number; lng: number };
 
@@ -12,6 +20,34 @@ export default function PedidosPage() {
   const [sinpe, setSinpe] = useState<string | null>(null);
   const [shop, setShop] = useState<Pos | null>(null);
   const [here, setHere] = useState<Pos | null>(null);
+  const [alertsOn, setAlertsOn] = useState(false);
+
+  // Ids of orders already seen, so we only alert for genuinely new ones.
+  // null until the first successful load (avoids alerting for pre-existing orders).
+  const seenIds = useRef<string[] | null>(null);
+  const alertsOnRef = useRef(false);
+
+  useEffect(() => {
+    alertsOnRef.current = alertsOn;
+  }, [alertsOn]);
+
+  // Restore whether the user previously enabled sound/notification alerts.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (localStorage.getItem("ordersAlertsOn") === "1") setAlertsOn(true);
+  }, []);
+
+  async function enableAlerts() {
+    unlockAudio();
+    await requestNotificationPermission();
+    setAlertsOn(true);
+    try {
+      localStorage.setItem("ordersAlertsOn", "1");
+    } catch {
+      /* ignore */
+    }
+    playBell();
+  }
 
   // Track the admin/driver's live location to measure real distances.
   useEffect(() => {
@@ -33,9 +69,21 @@ export default function PedidosPage() {
     ]);
     if (oRes.ok) {
       const data = await oRes.json();
-      setPickup(data.pickup ?? []);
-      setDelivery(data.delivery ?? []);
+      const pickupOrders = data.pickup ?? [];
+      const deliveryOrders = data.delivery ?? [];
+      setPickup(pickupOrders);
+      setDelivery(deliveryOrders);
       setShop(data.shopLat != null && data.shopLng != null ? { lat: data.shopLat, lng: data.shopLng } : null);
+
+      // Detect new orders and fire alerts (sound + system notification + badge).
+      const currentIds = [...pickupOrders, ...deliveryOrders].map((o: any) => o.id);
+      const fresh = newOrderIds(seenIds.current, currentIds);
+      if (fresh.length > 0 && alertsOnRef.current) {
+        playBell();
+        void showOrderNotification(fresh.length);
+      }
+      seenIds.current = currentIds;
+      setOrderBadge(currentIds.length);
     }
     if (sRes.ok) {
       const s = await sRes.json();
@@ -64,6 +112,16 @@ export default function PedidosPage() {
 
   return (
     <div className="space-y-4">
+      {!alertsOn && (
+        <button
+          onClick={enableAlerts}
+          className="w-full py-2.5 rounded-lg border border-accent bg-accent-soft text-accent font-medium text-sm hover:bg-surface-2 transition-colors">
+          🔔 Activar avisos de pedidos nuevos (sonido y notificación)
+        </button>
+      )}
+      {alertsOn && (
+        <p className="text-xs text-muted text-center">🔔 Avisos activados — sonará una campanita cuando llegue un pedido nuevo.</p>
+      )}
       {tab === "DELIVERY" && delivery.length > 0 && (
         <p className="text-xs text-muted">
           {here ? "📍 Distancias desde tu ubicación actual" : "🏪 Distancias desde la tienda (activa el GPS para distancias en vivo)"}

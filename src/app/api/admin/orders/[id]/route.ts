@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/requireAdmin";
+import { isValidDiscount } from "@/lib/order";
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const deny = await requireAdmin();
@@ -8,7 +9,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const { id } = await params;
   let body: any;
   try { body = await req.json(); } catch { return NextResponse.json({ error: "JSON inválido" }, { status: 400 }); }
-  const { status, paid } = body;
+  const { status, paid, discountColones } = body;
   if (status !== undefined && status !== "DELIVERED" && status !== "CANCELLED") {
     return NextResponse.json({ error: "Estado inválido" }, { status: 400 });
   }
@@ -42,6 +43,14 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const data: any = {};
   if (status !== undefined) data.status = status;
   if (paid !== undefined) data.paid = Boolean(paid);
+  if (discountColones !== undefined) {
+    const existing = await prisma.order.findUnique({ where: { id }, select: { totalColones: true } });
+    if (!existing) return NextResponse.json({ error: "Pedido no encontrado" }, { status: 404 });
+    if (!isValidDiscount(existing.totalColones, discountColones)) {
+      return NextResponse.json({ error: "El descuento no puede ser mayor al total" }, { status: 400 });
+    }
+    data.discountColones = discountColones;
+  }
   const order = await prisma.order.update({ where: { id }, data });
   return NextResponse.json(order);
 }
