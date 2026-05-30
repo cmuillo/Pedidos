@@ -1,6 +1,8 @@
 "use client";
+import { useState } from "react";
 import { formatColones } from "@/lib/money";
 import { buildOnTheWayLink, buildNavLink } from "@/lib/whatsapp";
+import ConfirmDialog from "@/components/ConfirmDialog";
 
 type OrderItem = { nameSnapshot: string; qty: number; unitPrice: number };
 type Order = {
@@ -30,6 +32,8 @@ export default function OrderCard({
   onChange: () => void;
   readOnly?: boolean;
 }) {
+  const [confirmCancel, setConfirmCancel] = useState(false);
+
   async function patch(body: Record<string, unknown>) {
     await fetch(`/api/admin/orders/${order.id}`, {
       method: "PATCH",
@@ -129,11 +133,7 @@ export default function OrderCard({
           aria-label="Cancelar pedido"
           title="Cancelar pedido (devuelve el stock)"
           className="absolute bottom-3 right-3 w-9 h-9 flex items-center justify-center rounded-lg text-danger hover:bg-danger-soft transition-colors"
-          onClick={() => {
-            if (confirm("¿Cancelar este pedido? Se devolverá el stock al inventario.")) {
-              patch({ status: "CANCELLED" });
-            }
-          }}>
+          onClick={() => setConfirmCancel(true)}>
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
             fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 6h18" />
@@ -143,6 +143,18 @@ export default function OrderCard({
           </svg>
         </button>
       )}
+      <ConfirmDialog
+        open={confirmCancel}
+        title="¿Cancelar este pedido?"
+        message="Se devolverá el stock al inventario."
+        confirmLabel="Cancelar pedido"
+        cancelLabel="Volver"
+        onConfirm={() => {
+          setConfirmCancel(false);
+          patch({ status: "CANCELLED" });
+        }}
+        onCancel={() => setConfirmCancel(false)}
+      />
     </div>
   );
 }

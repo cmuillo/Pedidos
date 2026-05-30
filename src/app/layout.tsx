@@ -1,9 +1,14 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/Providers";
 import ThemeToggle from "@/components/ThemeToggle";
+import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 import { prisma } from "@/lib/prisma";
+
+export const viewport: Viewport = {
+  themeColor: "#e0689f",
+};
 
 const themeInitScript = `(function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark');}}catch(e){}})();`;
 
@@ -26,6 +31,15 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: name,
     description: "Pedidos en línea",
+    appleWebApp: {
+      capable: true,
+      title: name,
+      statusBarStyle: "default",
+    },
+    icons: {
+      icon: "/icon-192.png",
+      apple: "/icon-192.png",
+    },
   };
 }
 
@@ -45,6 +59,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col">
         <Providers>
+          <ServiceWorkerRegister />
           <ThemeToggle />
           {children}
         </Providers>

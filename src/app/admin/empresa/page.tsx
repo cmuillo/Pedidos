@@ -4,6 +4,32 @@ import dynamic from "next/dynamic";
 
 const LocationPicker = dynamic(() => import("@/components/LocationPicker"), { ssr: false });
 
+// Downscale an uploaded image (data URL) so the stored logo stays well under the
+// server's ~500 KB limit. Without this, large photos were silently rejected and
+// the logo never appeared on the customer screen. Falls back to JPEG if the
+// PNG is still too large.
+function downscaleImage(dataUrl: string, max = 256): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, max / Math.max(img.width, img.height));
+      const w = Math.max(1, Math.round(img.width * scale));
+      const h = Math.max(1, Math.round(img.height * scale));
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return reject(new Error("Canvas no disponible"));
+      ctx.drawImage(img, 0, 0, w, h);
+      let out = canvas.toDataURL("image/png");
+      if (out.length > 600_000) out = canvas.toDataURL("image/jpeg", 0.85);
+      resolve(out);
+    };
+    img.onerror = () => reject(new Error("No se pudo cargar la imagen"));
+    img.src = dataUrl;
+  });
+}
+
 type Settings = {
   id: number;
   name: string;
@@ -18,6 +44,7 @@ type Settings = {
 export default function EmpresaPage() {
   const [s, setS] = useState<Settings | null>(null);
   const [saving, setSaving] = useState(false);
+  const [logoErr, setLogoErr] = useState<string | null>(null);
 
   async function load() {
     const res = await fetch("/api/admin/settings", { cache: "no-store" });
@@ -25,7 +52,7 @@ export default function EmpresaPage() {
   }
   useEffect(() => { load(); }, []);
 
-  async function save(patch: Partial<Settings>) {
+  async function save(patch: Partial<Settings>): Promise<boolean> {
     setSaving(true);
     const res = await fetch("/api/admin/settings", {
       method: "PATCH",
@@ -34,13 +61,24 @@ export default function EmpresaPage() {
     });
     if (res.ok) setS(await res.json());
     setSaving(false);
+    return res.ok;
   }
 
-  function onLogo(e: React.ChangeEvent<HTMLInputElement>) {
+  async function onLogo(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+    setLogoErr(null);
     const reader = new FileReader();
-    reader.onload = () => save({ logoBase64: reader.result as string });
+    reader.onload = async () => {
+      try {
+        const dataUrl = await downscaleImage(reader.result as string);
+        const ok = await save({ logoBase64: dataUrl });
+        if (!ok) setLogoErr("No se pudo guardar el logo. Probá con otra imagen.");
+      } catch {
+        setLogoErr("No se pudo procesar la imagen.");
+      }
+    };
+    reader.onerror = () => setLogoErr("No se pudo leer el archivo.");
     reader.readAsDataURL(file);
   }
 
@@ -65,6 +103,7 @@ export default function EmpresaPage() {
             <img src={s.logoBase64} alt="logo" className="h-16 w-16 object-contain rounded mb-2" />
           )}
           <input type="file" accept="image/*" onChange={onLogo} />
+          {logoErr && <p className="text-sm text-danger mt-1">{logoErr}</p>}
         </div>
         <div>
           <label className="block text-sm text-muted mb-1">Teléfono SINPE</label>
