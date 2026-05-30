@@ -1,5 +1,6 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import OrderCard from "@/components/OrderCard";
 import { haversineMeters } from "@/lib/distance";
 import { newOrderIds } from "@/lib/notifications";
@@ -111,7 +112,7 @@ export default function PedidosPage() {
   const orders = tab === "PICKUP" ? pickup : deliverySorted;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pb-20">
       {!alertsOn && (
         <button
           onClick={enableAlerts}
@@ -144,6 +145,16 @@ export default function PedidosPage() {
       ) : (
         orders.map((o) => <OrderCard key={o.id} order={o} sinpePhone={sinpe} onChange={load} />)
       )}
+
+      {/* Sticky bottom bar: open the client order window to place an order
+          directly, reusing the same flow. It returns here after confirmation. */}
+      <div className="fixed bottom-0 left-0 right-0 z-10 p-3 bg-background border-t">
+        <Link
+          href="/?return=/admin/pedidos"
+          className="block w-full text-center bg-accent text-accent-fg rounded-lg py-3.5 font-semibold text-base hover:bg-accent-hover transition-colors">
+          ➕ Cargar pedido
+        </Link>
+      </div>
     </div>
   );
 }
