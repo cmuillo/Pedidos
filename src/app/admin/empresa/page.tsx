@@ -33,12 +33,15 @@ function downscaleImage(dataUrl: string, max = 256): Promise<string> {
 type Settings = {
   id: number;
   name: string;
+  slogan: string | null;
   logoBase64: string | null;
   deliveryEnabled: boolean;
   shopLat: number | null;
   shopLng: number | null;
   sinpePhone: string | null;
   whatsappFrom: string | null;
+  facebookUser: string | null;
+  instagramUser: string | null;
 };
 
 export default function EmpresaPage() {
@@ -98,6 +101,14 @@ export default function EmpresaPage() {
             onBlur={(e) => { if (e.target.value.trim() !== s.name) save({ name: e.target.value.trim() }); }} />
         </div>
         <div>
+          <label className="block text-sm text-muted mb-1">Slogan</label>
+          <input
+            className="w-full border rounded-lg p-2 bg-surface placeholder:text-muted"
+            placeholder="Los mejores helados de la ciudad"
+            defaultValue={s.slogan ?? ""}
+            onBlur={(e) => { const v = e.target.value.trim(); if (v !== (s.slogan ?? "")) save({ slogan: v || null }); }} />
+        </div>
+        <div>
           <label className="block text-sm text-muted mb-1">Logo</label>
           {s.logoBase64 && (
             <img src={s.logoBase64} alt="logo" className="h-16 w-16 object-contain rounded mb-2" />
@@ -118,6 +129,20 @@ export default function EmpresaPage() {
             className="w-full border rounded-lg p-2 bg-surface placeholder:text-muted" placeholder="50688880000"
             defaultValue={s.whatsappFrom ?? ""}
             onBlur={(e) => save({ whatsappFrom: e.target.value || null })} />
+        </div>
+        <div>
+          <label className="block text-sm text-muted mb-1">Usuario de Facebook</label>
+          <input
+            className="w-full border rounded-lg p-2 bg-surface placeholder:text-muted" placeholder="miheladeria"
+            defaultValue={s.facebookUser ?? ""}
+            onBlur={(e) => { const v = e.target.value.trim(); if (v !== (s.facebookUser ?? "")) save({ facebookUser: v || null }); }} />
+        </div>
+        <div>
+          <label className="block text-sm text-muted mb-1">Usuario de Instagram</label>
+          <input
+            className="w-full border rounded-lg p-2 bg-surface placeholder:text-muted" placeholder="miheladeria"
+            defaultValue={s.instagramUser ?? ""}
+            onBlur={(e) => { const v = e.target.value.trim(); if (v !== (s.instagramUser ?? "")) save({ instagramUser: v || null }); }} />
         </div>
       </div>
 

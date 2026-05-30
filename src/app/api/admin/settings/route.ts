@@ -14,7 +14,7 @@ export async function PATCH(req: Request) {
   if (deny) return deny;
   let body: any;
   try { body = await req.json(); } catch { return NextResponse.json({ error: "JSON inválido" }, { status: 400 }); }
-  const allowed = ["name", "logoBase64", "deliveryEnabled", "shopLat", "shopLng", "sinpePhone", "whatsappFrom"];
+  const allowed = ["name", "slogan", "logoBase64", "deliveryEnabled", "shopLat", "shopLng", "sinpePhone", "whatsappFrom", "facebookUser", "instagramUser"];
   if (typeof body.logoBase64 === "string" && body.logoBase64.length > 700_000) {
     return NextResponse.json({ error: "El logo es demasiado grande (máx. ~500 KB)" }, { status: 400 });
   }

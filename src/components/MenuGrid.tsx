@@ -4,7 +4,7 @@ import { formatColones } from "@/lib/money";
 import { useCart } from "@/components/CartContext";
 
 type Product = { id: string; name: string; priceColones: number; stock: number };
-type Business = { name: string; logoBase64: string | null; deliveryEnabled: boolean; shopLat: number | null; shopLng: number | null };
+type Business = { name: string; slogan: string | null; logoBase64: string | null; deliveryEnabled: boolean; shopLat: number | null; shopLng: number | null; whatsappFrom: string | null; facebookUser: string | null; instagramUser: string | null };
 
 export default function MenuGrid({ onBusiness }: { onBusiness: (b: Business) => void }) {
   const [products, setProducts] = useState<Product[]>([]);
