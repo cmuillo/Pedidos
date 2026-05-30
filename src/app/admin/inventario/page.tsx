@@ -9,6 +9,8 @@ export default function InventarioPage() {
   const [form, setForm] = useState({ name: "", priceColones: "", stock: "" });
   const [adding, setAdding] = useState(false);
   const [filter, setFilter] = useState<"all" | "active" | "inactive">("all");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({ name: "", priceColones: "" });
 
   async function load() {
     const res = await fetch("/api/admin/products", { cache: "no-store" });
@@ -44,6 +46,23 @@ export default function InventarioPage() {
     if (!confirm("¿Eliminar este producto?")) return;
     await fetch(`/api/admin/products/${id}`, { method: "DELETE" });
     load();
+  }
+
+  function startEdit(p: Product) {
+    setEditingId(p.id);
+    setEditForm({ name: p.name, priceColones: String(p.priceColones) });
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setEditForm({ name: "", priceColones: "" });
+  }
+
+  async function saveEdit(id: string) {
+    const price = Number(editForm.priceColones);
+    if (!editForm.name.trim() || isNaN(price)) return;
+    await patch(id, { name: editForm.name.trim().toUpperCase(), priceColones: price });
+    cancelEdit();
   }
 
   return (
@@ -92,6 +111,29 @@ export default function InventarioPage() {
         .filter((p) => filter === "all" || (filter === "active" ? p.active : !p.active))
         .map((p) => (
         <div key={p.id} className="border rounded-xl p-4 bg-surface shadow-sm">
+          {editingId === p.id ? (
+            <div className="space-y-2">
+              <input
+                className="w-full border rounded-lg p-2 bg-surface placeholder:text-muted" placeholder="Nombre del sabor"
+                value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} />
+              <input
+                className="w-full border rounded-lg p-2 bg-surface placeholder:text-muted" type="number" placeholder="Precio ₡" min={0}
+                value={editForm.priceColones} onChange={(e) => setEditForm({ ...editForm, priceColones: e.target.value })} />
+              <div className="flex gap-2">
+                <button
+                  className="flex-1 bg-accent text-accent-fg rounded-lg p-2 font-medium hover:bg-accent-hover transition-colors"
+                  onClick={() => saveEdit(p.id)}>
+                  Guardar
+                </button>
+                <button
+                  className="flex-1 border rounded-lg p-2 text-muted hover:bg-surface-2 transition-colors"
+                  onClick={cancelEdit}>
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          ) : (
+          <>
           <div className="flex items-center justify-between mb-2">
             <span className="font-semibold">{p.name}</span>
             <span className="text-muted">{formatColones(p.priceColones)}</span>
@@ -110,11 +152,18 @@ export default function InventarioPage() {
               {p.active ? "Activo" : "Inactivo"}
             </button>
             <button
-              className="px-2 py-1 border rounded-lg text-sm text-danger hover:bg-danger-soft ml-auto transition-colors"
+              className="px-2 py-1 border rounded-lg text-sm hover:bg-surface-2 ml-auto transition-colors"
+              onClick={() => startEdit(p)}>
+              Editar
+            </button>
+            <button
+              className="px-2 py-1 border rounded-lg text-sm text-danger hover:bg-danger-soft transition-colors"
               onClick={() => remove(p.id)}>
               Eliminar
             </button>
           </div>
+          </>
+          )}
         </div>
       ))}
     </div>
