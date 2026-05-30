@@ -98,7 +98,17 @@ export default function OrderCard({
   }
 
   function sendWhatsapp() {
-    window.open(waLinkForStage(messageStage), "_blank", "noopener,noreferrer");
+    // Open via a temporary anchor instead of window.open(url, "_blank", features).
+    // Passing a windowFeatures string makes some browsers (notably iOS Safari and
+    // installed PWAs) open an empty popup tab and drop the URL. An anchor click
+    // navigates reliably to WhatsApp while keeping the opener detached.
+    const a = document.createElement("a");
+    a.href = waLinkForStage(messageStage);
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
     const next = Math.min(messageStage + 1, 2);
     if (next !== messageStage) void patch({ messageStage: next });
   }

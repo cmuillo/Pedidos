@@ -11,7 +11,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
   return (
     <div className="min-h-screen">
-      <nav className="flex gap-2 p-4 border-b overflow-x-auto text-sm bg-surface items-center">
+      <nav className="sticky top-0 z-50 flex gap-2 p-4 border-b overflow-x-auto text-sm bg-surface items-center">
         <AdminNav />
         <LogoutButton />
       </nav>

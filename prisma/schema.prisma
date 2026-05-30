@@ -10,12 +10,15 @@ datasource db {
 model BusinessSettings {
   id              Int      @id @default(1)
   name            String   @default("Mi Heladería")
+  slogan          String?
   logoBase64      String?  @db.Text
   deliveryEnabled Boolean  @default(true)
   shopLat         Float?
   shopLng         Float?
   sinpePhone      String?
   whatsappFrom    String?
+  facebookUser    String?
+  instagramUser   String?
   updatedAt       DateTime @updatedAt
 }
 

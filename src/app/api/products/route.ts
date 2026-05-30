@@ -14,10 +14,14 @@ export async function GET() {
     products,
     business: {
       name: settings?.name ?? "Mi Heladería",
+      slogan: settings?.slogan ?? null,
       logoBase64: settings?.logoBase64 ?? null,
       deliveryEnabled: settings?.deliveryEnabled ?? false,
       shopLat: settings?.shopLat ?? null,
       shopLng: settings?.shopLng ?? null,
+      whatsappFrom: settings?.whatsappFrom ?? null,
+      facebookUser: settings?.facebookUser ?? null,
+      instagramUser: settings?.instagramUser ?? null,
     },
   });
 }
