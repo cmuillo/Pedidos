@@ -8,6 +8,7 @@ export default function InventarioPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [form, setForm] = useState({ name: "", priceColones: "", stock: "" });
   const [adding, setAdding] = useState(false);
+  const [filter, setFilter] = useState<"all" | "active" | "inactive">("all");
 
   async function load() {
     const res = await fetch("/api/admin/products", { cache: "no-store" });
@@ -23,7 +24,7 @@ export default function InventarioPage() {
     await fetch("/api/admin/products", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: form.name.trim(), priceColones: price, stock }),
+      body: JSON.stringify({ name: form.name.trim().toUpperCase(), priceColones: price, stock }),
     });
     setForm({ name: "", priceColones: "", stock: "" });
     setAdding(false);
@@ -70,7 +71,26 @@ export default function InventarioPage() {
         <p className="text-center text-muted py-4">Sin productos todavía</p>
       )}
 
-      {products.map((p) => (
+      {products.length > 0 && (
+        <div className="flex gap-2">
+          {([
+            ["all", "Todos"],
+            ["active", "Activos"],
+            ["inactive", "Inactivos"],
+          ] as const).map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() => setFilter(key)}
+              className={`px-3 py-1 border rounded-lg text-sm transition-colors ${filter === key ? "bg-accent text-accent-fg border-accent" : "bg-surface text-muted hover:bg-surface-2"}`}>
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {products
+        .filter((p) => filter === "all" || (filter === "active" ? p.active : !p.active))
+        .map((p) => (
         <div key={p.id} className="border rounded-xl p-4 bg-surface shadow-sm">
           <div className="flex items-center justify-between mb-2">
             <span className="font-semibold">{p.name}</span>

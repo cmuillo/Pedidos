@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   const products = await prisma.product.findMany({
-    where: { active: true },
+    where: { active: true, stock: { gt: 0 } },
     orderBy: { sortOrder: "asc" },
     select: { id: true, name: true, priceColones: true, stock: true },
   });

@@ -9,7 +9,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   let body: any;
   try { body = await req.json(); } catch { return NextResponse.json({ error: "JSON inválido" }, { status: 400 }); }
   const data: any = {};
-  if (body.name !== undefined) data.name = String(body.name).trim();
+  if (body.name !== undefined) data.name = String(body.name).trim().toUpperCase();
   if (body.priceColones !== undefined) data.priceColones = Number(body.priceColones);
   if (body.stock !== undefined) data.stock = Number(body.stock);
   if (body.active !== undefined) data.active = Boolean(body.active);
@@ -21,6 +21,6 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
   const deny = await requireAdmin();
   if (deny) return deny;
   const { id } = await params;
-  await prisma.product.update({ where: { id }, data: { active: false } });
+  await prisma.product.delete({ where: { id } });
   return new Response(null, { status: 204 });
 }
