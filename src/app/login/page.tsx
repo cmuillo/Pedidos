@@ -24,11 +24,11 @@ export default function LoginPage() {
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden p-4">
       {/* Decoración de fondo */}
       <div
-        aria-hidden
+        aria-hidden="true"
         className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-accent-soft blur-3xl"
       />
       <div
-        aria-hidden
+        aria-hidden="true"
         className="pointer-events-none absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-accent-soft blur-3xl"
       />
 
