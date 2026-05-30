@@ -21,6 +21,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         if (!existing) throw new Error("not_found");
         if (existing.status !== "CANCELLED") {
           for (const it of existing.items) {
+            if (!it.productId) continue;
             await tx.product.update({
               where: { id: it.productId },
               data: { stock: { increment: it.qty } },

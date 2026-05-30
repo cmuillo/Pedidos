@@ -18,6 +18,6 @@ export async function POST(req: Request) {
   if (!name?.trim()) return NextResponse.json({ error: "Nombre requerido" }, { status: 400 });
   if (typeof priceColones !== "number" || priceColones < 0) return NextResponse.json({ error: "Precio inválido" }, { status: 400 });
   if (typeof stock !== "number" || stock < 0) return NextResponse.json({ error: "Stock inválido" }, { status: 400 });
-  const product = await prisma.product.create({ data: { name: name.trim(), priceColones, stock } });
+  const product = await prisma.product.create({ data: { name: name.trim().toUpperCase(), priceColones, stock } });
   return NextResponse.json(product, { status: 201 });
 }

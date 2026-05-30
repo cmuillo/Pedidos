@@ -16,7 +16,7 @@ export async function GET(req: Request) {
 
   const orders = await prisma.order.findMany({
     where: { status: "DELIVERED", createdAt: { gte: from, lte: to } },
-    include: { items: { include: { product: true } } },
+    include: { items: true },
   });
 
   const totalRevenue = orders.reduce((sum, o) => sum + o.totalColones, 0);
@@ -25,10 +25,11 @@ export async function GET(req: Request) {
   const flavorMap = new Map<string, { name: string; qty: number; revenue: number }>();
   for (const order of orders) {
     for (const item of order.items) {
-      const existing = flavorMap.get(item.productId) ?? { name: item.product.name, qty: 0, revenue: 0 };
+      const key = item.productId ?? `snapshot:${item.nameSnapshot}`;
+      const existing = flavorMap.get(key) ?? { name: item.nameSnapshot, qty: 0, revenue: 0 };
       existing.qty += item.qty;
       existing.revenue += item.qty * item.unitPrice;
-      flavorMap.set(item.productId, existing);
+      flavorMap.set(key, existing);
     }
   }
   const topFlavors = [...flavorMap.values()].sort((a, b) => b.qty - a.qty).slice(0, 10);

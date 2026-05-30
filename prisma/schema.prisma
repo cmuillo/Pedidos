@@ -64,12 +64,12 @@ model Order {
 model OrderItem {
   id           String  @id @default(cuid())
   orderId      String
-  productId    String
+  productId    String?
   nameSnapshot String
   unitPrice    Int
   qty          Int
-  order        Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product      Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product      Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
 
   @@index([orderId])
   @@index([productId])
