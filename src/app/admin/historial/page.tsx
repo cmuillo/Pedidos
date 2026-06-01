@@ -4,8 +4,17 @@ import OrderCard from "@/components/OrderCard";
 
 const PAGE_SIZE = 20;
 
+type TypeFilter = "ALL" | "DELIVERY" | "PICKUP";
+
+const TYPE_FILTERS: { id: TypeFilter; label: string }[] = [
+  { id: "ALL", label: "Todos" },
+  { id: "DELIVERY", label: "🛵 Express" },
+  { id: "PICKUP", label: "🏪 Recoger" },
+];
+
 export default function HistorialPage() {
   const [q, setQ] = useState("");
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>("ALL");
   const [orders, setOrders] = useState<any[]>([]);
   const [sinpe, setSinpe] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -13,15 +22,15 @@ export default function HistorialPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
 
-  const load = useCallback(async (query: string, pageNum: number) => {
+  const load = useCallback(async (query: string, pageNum: number, type: TypeFilter) => {
     setLoading(true);
     const params = new URLSearchParams({
       status: "DELIVERED",
-      paid: "true",
       page: String(pageNum),
       pageSize: String(PAGE_SIZE),
     });
     if (query.trim()) params.set("q", query.trim());
+    if (type !== "ALL") params.set("type", type);
     const res = await fetch(`/api/admin/orders?${params}`, { cache: "no-store" });
     if (res.ok) {
       const data = await res.json();
@@ -32,14 +41,14 @@ export default function HistorialPage() {
     setLoading(false);
   }, []);
 
-  // Reset to page 1 whenever the search term changes (debounced).
+  // Reset to page 1 whenever the search term or type filter changes (debounced).
   useEffect(() => {
     const t = setTimeout(() => {
       setPage(1);
-      load(q, 1);
+      load(q, 1, typeFilter);
     }, 300);
     return () => clearTimeout(t);
-  }, [q, load]);
+  }, [q, typeFilter, load]);
 
   useEffect(() => {
     fetch("/api/admin/settings", { cache: "no-store" })
@@ -51,14 +60,14 @@ export default function HistorialPage() {
   function goTo(p: number) {
     const next = Math.min(Math.max(p, 1), totalPages);
     setPage(next);
-    load(q, next);
+    load(q, next, typeFilter);
   }
 
   return (
     <div className="space-y-4">
       <div>
         <h1 className="text-lg font-semibold mb-1">Historial de pedidos</h1>
-        <p className="text-sm text-muted">Pedidos entregados y pagados</p>
+        <p className="text-sm text-muted">Pedidos entregados</p>
       </div>
 
       <input
@@ -66,6 +75,17 @@ export default function HistorialPage() {
         placeholder="Buscar por código de pedido o nombre del cliente…"
         value={q}
         onChange={(e) => setQ(e.target.value)} />
+
+      <div className="flex flex-wrap gap-2">
+        {TYPE_FILTERS.map((f) => (
+          <button
+            key={f.id}
+            className={`px-3 py-2 border rounded-lg text-sm font-medium transition-colors ${typeFilter === f.id ? "bg-accent text-accent-fg border-accent" : "bg-surface hover:bg-surface-2"}`}
+            onClick={() => setTypeFilter(f.id)}>
+            {f.label}
+          </button>
+        ))}
+      </div>
 
       {total > 0 && (
         <div className="flex justify-between text-sm border-b pb-2">
@@ -78,11 +98,11 @@ export default function HistorialPage() {
 
       {!loading && orders.length === 0 ? (
         <p className="text-center text-muted py-8">
-          {q.trim() ? "Sin resultados para tu búsqueda" : "Aún no hay pedidos entregados y pagados"}
+          {q.trim() || typeFilter !== "ALL" ? "Sin resultados para tu búsqueda" : "Aún no hay pedidos entregados"}
         </p>
       ) : (
         orders.map((o) => (
-          <OrderCard key={o.id} order={o} sinpePhone={sinpe} onChange={() => load(q, page)} readOnly />
+          <OrderCard key={o.id} order={o} sinpePhone={sinpe} onChange={() => load(q, page, typeFilter)} readOnly />
         ))
       )}
 

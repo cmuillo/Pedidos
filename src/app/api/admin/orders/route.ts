@@ -9,6 +9,7 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const status = searchParams.get("status") ?? "PENDING";
   const paidParam = searchParams.get("paid");
+  const typeParam = searchParams.get("type");
   const q = (searchParams.get("q") ?? "").trim();
 
   if (status === "PENDING") {
@@ -36,6 +37,7 @@ export async function GET(req: Request) {
   const where: any = { status: status as any };
   if (paidParam === "true") where.paid = true;
   if (paidParam === "false") where.paid = false;
+  if (typeParam === "PICKUP" || typeParam === "DELIVERY") where.type = typeParam;
   if (q) {
     where.OR = [
       { code: { contains: q, mode: "insensitive" } },
