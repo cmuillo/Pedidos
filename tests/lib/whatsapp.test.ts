@@ -68,7 +68,23 @@ describe("buildReceivedLink", () => {
     expect(decoded).toContain("Hemos recibido tu pedido #ABC123");
     expect(decoded).toContain("Vainilla");
     expect(decoded).toContain("₡2.000");
-    expect(decoded).toContain("comprobante a este mismo chat");
+    expect(decoded).toContain("María Isabel Chacon Sibaja");
+    expect(decoded).toContain("87500829");
+    expect(decoded).toContain("efectivo");
+  });
+
+  it("uses the configured sinpePhone when provided", () => {
+    const link = buildReceivedLink({
+      whatsapp: "50688887777",
+      customerName: "Ana",
+      code: "ABC123",
+      items: [{ nameSnapshot: "Vainilla", qty: 2, unitPrice: 1000 }],
+      totalColones: 2000,
+      sinpePhone: "88880000",
+    });
+    const decoded = decodeURIComponent(link.split("text=")[1]);
+    expect(decoded).toContain("88880000");
+    expect(decoded).not.toContain("87500829");
   });
 });
 

@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import OrderCard from "@/components/OrderCard";
+import ThemeToggle from "@/components/ThemeToggle";
 import { haversineMeters } from "@/lib/distance";
 import { newOrderIds } from "@/lib/notifications";
 import {
@@ -148,12 +149,13 @@ export default function PedidosPage() {
 
       {/* Sticky bottom bar: open the client order window to place an order
           directly, reusing the same flow. It returns here after confirmation. */}
-      <div className="fixed bottom-0 left-0 right-0 z-10 p-3 bg-background border-t">
+      <div className="fixed bottom-0 left-0 right-0 z-10 p-3 bg-background border-t flex gap-3">
         <Link
           href="/?return=/admin/pedidos"
-          className="block w-full text-center bg-accent text-accent-fg rounded-lg py-3.5 font-semibold text-base hover:bg-accent-hover transition-colors">
+          className="flex-1 text-center bg-accent text-accent-fg rounded-lg py-3.5 font-semibold text-base hover:bg-accent-hover transition-colors">
           ➕ Cargar pedido
         </Link>
+        <ThemeToggle inline />
       </div>
     </div>
   );

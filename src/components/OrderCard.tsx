@@ -83,6 +83,7 @@ export default function OrderCard({
         code: order.code,
         items: order.items,
         totalColones: net,
+        sinpePhone: sinpePhone ?? null,
       });
     }
     return buildOnTheWayLink({

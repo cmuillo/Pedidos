@@ -37,15 +37,18 @@ export function buildReceivedLink(params: {
   code: string;
   items: MsgItem[];
   totalColones: number;
+  sinpePhone?: string | null;
 }): string {
   const lines = params.items
     .map((i) => `• ${i.qty}x ${i.nameSnapshot} (${formatColones(i.unitPrice * i.qty)})`)
     .join("\n");
+  const sinpeNumber = (params.sinpePhone && params.sinpePhone.trim()) || "87500829";
   const text =
     `¡Hola ${params.customerName}! 🎉🍦\n` +
     `Hemos recibido tu pedido #${params.code} con:\n${lines}\n\n` +
     `Total a pagar: ${formatColones(params.totalColones)} 💵\n` +
-    `Por favor realiza el pago y envía el comprobante a este mismo chat 📲🙏\n\n` +
+    `Si pagás por SINPE, envialo al número ${sinpeNumber} a nombre de María Isabel Chacon Sibaja y mandá el comprobante a este mismo chat 📲🙏\n` +
+    `Si es en efectivo, solo indícanoslo. 💵\n\n` +
     `*¡Gracias por tu compra!* 💖`;
   return `https://wa.me/${params.whatsapp}?text=${encodeURIComponent(text)}`;
 }
