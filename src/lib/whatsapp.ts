@@ -56,3 +56,16 @@ export function buildReceivedLink(params: {
 export function buildNavLink(lat: number, lng: number): string {
   return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
 }
+
+export function buildThankYouLink(params: {
+  whatsapp: string;
+  customerName: string;
+}): string {
+  const name = params.customerName?.trim();
+  const greeting = name ? `¡Hola ${name}! 🎉🍦` : "¡Hola! 🎉🍦";
+  const text =
+    `${greeting}\n` +
+    `Queremos agradecerte de corazón por tus compras 💖\n` +
+    `Clientes como vos hacen posible lo que hacemos. ¡Mil gracias y te esperamos pronto! 🍨`;
+  return `https://wa.me/${params.whatsapp}?text=${encodeURIComponent(text)}`;
+}
