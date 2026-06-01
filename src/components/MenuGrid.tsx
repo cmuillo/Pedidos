@@ -4,9 +4,9 @@ import { formatColones } from "@/lib/money";
 import { useCart } from "@/components/CartContext";
 
 type Product = { id: string; name: string; priceColones: number; stock: number };
-type Business = { name: string; slogan: string | null; logoBase64: string | null; deliveryEnabled: boolean; shopLat: number | null; shopLng: number | null; whatsappFrom: string | null; facebookUser: string | null; instagramUser: string | null };
+type Business = { name: string; slogan: string | null; logoBase64: string | null; pickupEnabled: boolean; deliveryEnabled: boolean; shopLat: number | null; shopLng: number | null; whatsappFrom: string | null; facebookUser: string | null; instagramUser: string | null };
 
-export default function MenuGrid({ onBusiness }: { onBusiness: (b: Business) => void }) {
+export default function MenuGrid({ onBusiness, closed = false }: { onBusiness: (b: Business) => void; closed?: boolean }) {
   const [products, setProducts] = useState<Product[]>([]);
   const { items, setQty } = useCart();
 
@@ -23,6 +23,16 @@ export default function MenuGrid({ onBusiness }: { onBusiness: (b: Business) => 
     const id = setInterval(load, 5000);
     return () => clearInterval(id);
   }, [load]);
+
+  if (closed) {
+    return (
+      <div className="flex flex-col items-center justify-center text-center gap-3 py-16">
+        <div className="text-6xl">🔒</div>
+        <p className="text-xl font-bold">La tienda está cerrada</p>
+        <p className="text-muted max-w-xs">Por el momento no estamos recibiendo pedidos. ¡Vuelve pronto! 🍦</p>
+      </div>
+    );
+  }
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

@@ -12,6 +12,7 @@ model BusinessSettings {
   name            String   @default("Mi Heladería")
   slogan          String?
   logoBase64      String?  @db.Text
+  pickupEnabled   Boolean  @default(true)
   deliveryEnabled Boolean  @default(true)
   shopLat         Float?
   shopLng         Float?

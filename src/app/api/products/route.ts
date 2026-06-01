@@ -16,6 +16,7 @@ export async function GET() {
       name: settings?.name ?? "Mi Heladería",
       slogan: settings?.slogan ?? null,
       logoBase64: settings?.logoBase64 ?? null,
+      pickupEnabled: settings?.pickupEnabled ?? true,
       deliveryEnabled: settings?.deliveryEnabled ?? false,
       shopLat: settings?.shopLat ?? null,
       shopLng: settings?.shopLng ?? null,

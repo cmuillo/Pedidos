@@ -34,5 +34,19 @@ export async function GET(req: Request) {
   }
   const topFlavors = [...flavorMap.values()].sort((a, b) => b.qty - a.qty).slice(0, 10);
 
-  return NextResponse.json({ totalRevenue, totalOrders, topFlavors, from: from.toISOString(), to: to.toISOString() });
+  // Top customers by amount spent: group delivered orders by WhatsApp number,
+  // tallying units bought and net colones (total minus discount).
+  const customerMap = new Map<string, { whatsapp: string; name: string; orders: number; units: number; revenue: number }>();
+  for (const order of orders) {
+    const key = order.whatsapp;
+    const existing = customerMap.get(key) ?? { whatsapp: order.whatsapp, name: order.customerName, orders: 0, units: 0, revenue: 0 };
+    existing.name = order.customerName;
+    existing.orders += 1;
+    existing.units += order.items.reduce((sum, i) => sum + i.qty, 0);
+    existing.revenue += Math.max(0, order.totalColones - (order.discountColones ?? 0));
+    customerMap.set(key, existing);
+  }
+  const topCustomers = [...customerMap.values()].sort((a, b) => b.revenue - a.revenue).slice(0, 10);
+
+  return NextResponse.json({ totalRevenue, totalOrders, topFlavors, topCustomers, from: from.toISOString(), to: to.toISOString() });
 }

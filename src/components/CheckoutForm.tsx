@@ -14,10 +14,10 @@ export interface CheckoutFormHandle {
   submit: () => void;
 }
 
-const CheckoutForm = forwardRef<CheckoutFormHandle, { deliveryEnabled: boolean; shopLocation?: Pos | null; onSuccess?: (code: string) => void }>(
-function CheckoutForm({ deliveryEnabled, shopLocation, onSuccess }, ref) {
+const CheckoutForm = forwardRef<CheckoutFormHandle, { pickupEnabled: boolean; deliveryEnabled: boolean; shopLocation?: Pos | null; onSuccess?: (code: string) => void }>(
+function CheckoutForm({ pickupEnabled, deliveryEnabled, shopLocation, onSuccess }, ref) {
   const { items, setQty, clear } = useCart();
-  const [type, setType] = useState<"PICKUP" | "DELIVERY">("PICKUP");
+  const [type, setType] = useState<"PICKUP" | "DELIVERY">(pickupEnabled ? "PICKUP" : "DELIVERY");
   const [name, setName] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [addressText, setAddressText] = useState("");
@@ -112,11 +112,13 @@ function CheckoutForm({ deliveryEnabled, shopLocation, onSuccess }, ref) {
   return (
     <div className="space-y-3">
       <div className="flex gap-2">
-        <button
-          className={`flex-1 py-3 rounded-lg border font-medium transition-colors ${type === "PICKUP" ? "bg-accent text-accent-fg border-accent" : "bg-surface hover:bg-surface-2"}`}
-          onClick={() => setType("PICKUP")}>
-          🏪 Recoger
-        </button>
+        {pickupEnabled && (
+          <button
+            className={`flex-1 py-3 rounded-lg border font-medium transition-colors ${type === "PICKUP" ? "bg-accent text-accent-fg border-accent" : "bg-surface hover:bg-surface-2"}`}
+            onClick={() => setType("PICKUP")}>
+            🏪 Recoger
+          </button>
+        )}
         {deliveryEnabled && (
           <button
             className={`flex-1 py-3 rounded-lg border font-medium transition-colors ${type === "DELIVERY" ? "bg-accent text-accent-fg border-accent" : "bg-surface hover:bg-surface-2"}`}

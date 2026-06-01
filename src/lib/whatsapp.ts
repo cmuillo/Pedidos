@@ -37,19 +37,35 @@ export function buildReceivedLink(params: {
   code: string;
   items: MsgItem[];
   totalColones: number;
+  sinpePhone?: string | null;
 }): string {
   const lines = params.items
     .map((i) => `• ${i.qty}x ${i.nameSnapshot} (${formatColones(i.unitPrice * i.qty)})`)
     .join("\n");
+  const sinpeNumber = (params.sinpePhone && params.sinpePhone.trim()) || "87500829";
   const text =
     `¡Hola ${params.customerName}! 🎉🍦\n` +
     `Hemos recibido tu pedido #${params.code} con:\n${lines}\n\n` +
     `Total a pagar: ${formatColones(params.totalColones)} 💵\n` +
-    `Por favor realiza el pago y envía el comprobante a este mismo chat 📲🙏\n\n` +
+    `Si pagás por SINPE, enviálo al número ${sinpeNumber} a nombre de María Isabel Chacon Sibaja y mandá el comprobante a este mismo chat 📲🙏\n` +
+    `Si es en efectivo, solo indicánoslo. 💵\n\n` +
     `*¡Gracias por tu compra!* 💖`;
   return `https://wa.me/${params.whatsapp}?text=${encodeURIComponent(text)}`;
 }
 
 export function buildNavLink(lat: number, lng: number): string {
   return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+}
+
+export function buildThankYouLink(params: {
+  whatsapp: string;
+  customerName: string;
+}): string {
+  const name = params.customerName?.trim();
+  const greeting = name ? `¡Hola ${name}! 🎉🍦` : "¡Hola! 🎉🍦";
+  const text =
+    `${greeting}\n` +
+    `Queremos agradecerte de corazón por tus compras 💖\n` +
+    `Clientes como vos hacen posible lo que hacemos. ¡Mil gracias y te esperamos pronto! 🍨`;
+  return `https://wa.me/${params.whatsapp}?text=${encodeURIComponent(text)}`;
 }

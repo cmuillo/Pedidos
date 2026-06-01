@@ -35,6 +35,7 @@ type Settings = {
   name: string;
   slogan: string | null;
   logoBase64: string | null;
+  pickupEnabled: boolean;
   deliveryEnabled: boolean;
   shopLat: number | null;
   shopLng: number | null;
@@ -151,6 +152,23 @@ export default function EmpresaPage() {
           <input
             type="checkbox"
             className="w-5 h-5 accent-accent"
+            checked={s.pickupEnabled}
+            onChange={(e) => {
+              setS({ ...s, pickupEnabled: e.target.checked });
+              save({ pickupEnabled: e.target.checked });
+            }} />
+          <div>
+            <p className="font-semibold">Recoger activo</p>
+            <p className="text-sm text-muted">Desactiva para no aceptar pedidos para recoger</p>
+          </div>
+        </label>
+      </div>
+
+      <div className="border rounded-xl p-4 bg-surface shadow-sm">
+        <label className="flex items-center gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            className="w-5 h-5 accent-accent"
             checked={s.deliveryEnabled}
             onChange={(e) => {
               setS({ ...s, deliveryEnabled: e.target.checked });
@@ -162,6 +180,12 @@ export default function EmpresaPage() {
           </div>
         </label>
       </div>
+
+      {!s.pickupEnabled && !s.deliveryEnabled && (
+        <p className="text-sm bg-danger-soft text-danger p-3 rounded-lg border border-danger/30">
+          Recoger y Express están desactivados: la tienda aparecerá cerrada para los clientes.
+        </p>
+      )}
 
       <div className="border rounded-xl p-4 space-y-2 bg-surface shadow-sm">
         <p className="font-semibold">Ubicación de la tienda</p>

@@ -5,13 +5,14 @@ import { CartProvider, useCart } from "@/components/CartContext";
 import MenuGrid from "@/components/MenuGrid";
 import CheckoutForm, { CheckoutFormHandle } from "@/components/CheckoutForm";
 
-type Business = { name: string; slogan: string | null; logoBase64: string | null; deliveryEnabled: boolean; shopLat: number | null; shopLng: number | null; whatsappFrom: string | null; facebookUser: string | null; instagramUser: string | null };
+type Business = { name: string; slogan: string | null; logoBase64: string | null; pickupEnabled: boolean; deliveryEnabled: boolean; shopLat: number | null; shopLng: number | null; whatsappFrom: string | null; facebookUser: string | null; instagramUser: string | null };
 
 function HomeContent() {
   const [business, setBusiness] = useState<Business>({
     name: "Mi Heladería",
     slogan: null,
     logoBase64: null,
+    pickupEnabled: true,
     deliveryEnabled: false,
     shopLat: null,
     shopLng: null,
@@ -52,6 +53,7 @@ function HomeContent() {
   }, [step, router]);
 
   const cartCount = items.reduce((s, i) => s + i.qty, 0);
+  const storeClosed = !business.pickupEnabled && !business.deliveryEnabled;
 
   return (
     <div className="min-h-screen flex flex-col pb-20">
@@ -78,7 +80,7 @@ function HomeContent() {
       {/* Step 1: Menú */}
       {step === 1 && (
         <main className="flex-1 px-3 sm:px-6">
-          <MenuGrid onBusiness={handleBusiness} />
+          <MenuGrid onBusiness={handleBusiness} closed={storeClosed} />
         </main>
       )}
 
@@ -88,6 +90,7 @@ function HomeContent() {
           <h2 className="text-lg font-semibold mb-4">Tu pedido</h2>
           <CheckoutForm
             ref={checkoutRef}
+            pickupEnabled={business.pickupEnabled}
             deliveryEnabled={business.deliveryEnabled}
             shopLocation={
               business.shopLat != null && business.shopLng != null
@@ -122,12 +125,14 @@ function HomeContent() {
         <div className="fixed bottom-0 left-0 right-0 p-3 bg-background border-t flex gap-3">
           {step === 1 && (
             <button
-              disabled={cartCount === 0}
+              disabled={cartCount === 0 || storeClosed}
               onClick={() => setStep(2)}
               className="flex-1 bg-accent text-accent-fg rounded-lg py-3.5 font-semibold text-base disabled:opacity-40 hover:bg-accent-hover transition-colors">
-              {cartCount > 0
-                ? `Enviar pedido (${cartCount} ${cartCount === 1 ? "item" : "items"})`
-                : "Enviar pedido"}
+              {storeClosed
+                ? "Tienda cerrada"
+                : cartCount > 0
+                  ? `Enviar pedido (${cartCount} ${cartCount === 1 ? "item" : "items"})`
+                  : "Enviar pedido"}
             </button>
           )}
           {step === 2 && (
