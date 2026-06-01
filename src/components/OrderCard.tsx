@@ -146,8 +146,8 @@ export default function OrderCard({
             <span className="text-xs text-success block">Descuento -{formatColones(discount)}</span>
           )}
           {readOnly && (
-            <span className="text-xs text-success font-medium">
-              {order.type === "DELIVERY" ? "🛵 Express" : "🏪 Recoger"} · ✓ Pagado
+            <span className={`text-xs font-medium ${order.paid ? "text-success" : "text-warning"}`}>
+              {order.type === "DELIVERY" ? "🛵 Express" : "🏪 Recoger"} · {order.paid ? "✓ Pagado" : "Pendiente de pago"}
             </span>
           )}
         </div>
