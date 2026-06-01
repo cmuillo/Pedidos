@@ -47,8 +47,8 @@ export function buildReceivedLink(params: {
     `¡Hola ${params.customerName}! 🎉🍦\n` +
     `Hemos recibido tu pedido #${params.code} con:\n${lines}\n\n` +
     `Total a pagar: ${formatColones(params.totalColones)} 💵\n` +
-    `Si pagás por SINPE, envialo al número ${sinpeNumber} a nombre de María Isabel Chacon Sibaja y mandá el comprobante a este mismo chat 📲🙏\n` +
-    `Si es en efectivo, solo indícanoslo. 💵\n\n` +
+    `Si pagás por SINPE, enviálo al número ${sinpeNumber} a nombre de María Isabel Chacon Sibaja y mandá el comprobante a este mismo chat 📲🙏\n` +
+    `Si es en efectivo, solo indicánoslo. 💵\n\n` +
     `*¡Gracias por tu compra!* 💖`;
   return `https://wa.me/${params.whatsapp}?text=${encodeURIComponent(text)}`;
 }
