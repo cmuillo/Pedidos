@@ -160,6 +160,15 @@ export default function OrderCard({
       {order.addressText && (
         <p className="text-sm">📍 {order.addressText}</p>
       )}
+      {readOnly && (
+        <div className="pt-1">
+          <button
+            className={`px-3 py-2 border rounded-lg text-sm font-medium transition-colors ${order.paid ? "bg-success text-accent-fg border-success" : "hover:bg-surface-2"}`}
+            onClick={() => patch({ paid: !order.paid })}>
+            {order.paid ? "✓ Pagado" : "Marcar pagado"}
+          </button>
+        </div>
+      )}
       {!readOnly && order.distanceMeters != null && (
         <p className="text-xs text-muted">A {(order.distanceMeters / 1000).toFixed(1)} km</p>
       )}

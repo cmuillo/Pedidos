@@ -14,10 +14,17 @@ export async function GET(req: Request) {
 
   const { from, to } = getDateRange(preset, fromStr, toStr);
 
-  const orders = await prisma.order.findMany({
-    where: { status: "DELIVERED", createdAt: { gte: from, lte: to } },
-    include: { items: true },
-  });
+  const [orders, pendingPaymentOrders] = await Promise.all([
+    prisma.order.findMany({
+      where: { status: "DELIVERED", paid: true, createdAt: { gte: from, lte: to } },
+      include: { items: true },
+    }),
+    prisma.order.findMany({
+      where: { status: { not: "CANCELLED" }, paid: false },
+      include: { items: true },
+      orderBy: { createdAt: "asc" },
+    }),
+  ]);
 
   const totalRevenue = orders.reduce((sum, o) => sum + Math.max(0, o.totalColones - (o.discountColones ?? 0)), 0);
   const totalOrders = orders.length;
@@ -34,7 +41,7 @@ export async function GET(req: Request) {
   }
   const topFlavors = [...flavorMap.values()].sort((a, b) => b.qty - a.qty).slice(0, 10);
 
-  // Top customers by amount spent: group delivered orders by WhatsApp number,
+  // Top customers by amount spent: group delivered+paid orders by WhatsApp number,
   // tallying units bought and net colones (total minus discount).
   const customerMap = new Map<string, { whatsapp: string; name: string; orders: number; units: number; revenue: number }>();
   for (const order of orders) {
@@ -48,5 +55,15 @@ export async function GET(req: Request) {
   }
   const topCustomers = [...customerMap.values()].sort((a, b) => b.revenue - a.revenue).slice(0, 10);
 
-  return NextResponse.json({ totalRevenue, totalOrders, topFlavors, topCustomers, from: from.toISOString(), to: to.toISOString() });
+  const pendingPayment = pendingPaymentOrders.map((o) => ({
+    id: o.id,
+    code: o.code,
+    customerName: o.customerName,
+    whatsapp: o.whatsapp,
+    status: o.status,
+    totalColones: Math.max(0, o.totalColones - (o.discountColones ?? 0)),
+    createdAt: o.createdAt,
+  }));
+
+  return NextResponse.json({ totalRevenue, totalOrders, topFlavors, topCustomers, pendingPayment, from: from.toISOString(), to: to.toISOString() });
 }
