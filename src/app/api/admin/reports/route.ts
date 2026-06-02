@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/requireAdmin";
 import { getDateRange } from "@/lib/reports";
+import { netTotal } from "@/lib/order";
 
 export async function GET(req: Request) {
   const deny = await requireAdmin();
@@ -26,7 +27,7 @@ export async function GET(req: Request) {
     }),
   ]);
 
-  const totalRevenue = orders.reduce((sum, o) => sum + Math.max(0, o.totalColones - (o.discountColones ?? 0)), 0);
+  const totalRevenue = orders.reduce((sum, o) => sum + netTotal(o.totalColones, o.discountColones ?? 0), 0);
   const totalOrders = orders.length;
 
   const flavorMap = new Map<string, { name: string; qty: number; revenue: number }>();
@@ -50,7 +51,7 @@ export async function GET(req: Request) {
     existing.name = order.customerName;
     existing.orders += 1;
     existing.units += order.items.reduce((sum, i) => sum + i.qty, 0);
-    existing.revenue += Math.max(0, order.totalColones - (order.discountColones ?? 0));
+    existing.revenue += netTotal(order.totalColones, order.discountColones ?? 0);
     customerMap.set(key, existing);
   }
   const topCustomers = [...customerMap.values()].sort((a, b) => b.revenue - a.revenue).slice(0, 10);
@@ -61,7 +62,7 @@ export async function GET(req: Request) {
     customerName: o.customerName,
     whatsapp: o.whatsapp,
     status: o.status,
-    totalColones: Math.max(0, o.totalColones - (o.discountColones ?? 0)),
+    totalColones: netTotal(o.totalColones, o.discountColones ?? 0),
     createdAt: o.createdAt,
   }));
 
