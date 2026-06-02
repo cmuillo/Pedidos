@@ -3,11 +3,22 @@ import { useEffect, useState } from "react";
 import { formatColones } from "@/lib/money";
 import { buildThankYouLink } from "@/lib/whatsapp";
 
+type PendingPaymentItem = {
+  id: string;
+  code: string;
+  customerName: string;
+  whatsapp: string;
+  status: string;
+  totalColones: number;
+  createdAt: string;
+};
+
 type Report = {
   totalRevenue: number;
   totalOrders: number;
   topFlavors: { name: string; qty: number; revenue: number }[];
   topCustomers: { whatsapp: string; name: string; orders: number; units: number; revenue: number }[];
+  pendingPayment: PendingPaymentItem[];
 };
 
 export default function ReportesPage() {
@@ -147,6 +158,33 @@ export default function ReportesPage() {
                     <span className="text-sm">{report.topCustomers.reduce((s, c) => s + c.units, 0)} u</span>
                     <span className="text-sm text-accent ml-2">{formatColones(report.topCustomers.reduce((s, c) => s + c.revenue, 0))}</span>
                   </div>
+                </div>
+              </>
+            )}
+          </div>
+
+          <div className="border rounded-xl p-4 bg-surface shadow-sm">
+            <p className="font-semibold mb-1">⏳ Pendientes de pago</p>
+            <p className="text-xs text-muted mb-3">Pedidos activos sin cobrar (independiente del período seleccionado)</p>
+            {(report.pendingPayment?.length ?? 0) === 0 ? (
+              <p className="text-muted text-sm">No hay pedidos pendientes de pago 🎉</p>
+            ) : (
+              <>
+                <ul className="space-y-2">
+                  {report.pendingPayment.map((o) => (
+                    <li key={o.id} className="flex justify-between items-center gap-2">
+                      <span className="text-sm min-w-0">
+                        <span className="font-medium">{o.customerName}</span>
+                        <span className="block text-xs text-muted font-mono">{o.code}</span>
+                        <span className="block text-xs text-muted">{o.whatsapp} · {o.status === "DELIVERED" ? "Entregado" : "Pendiente"}</span>
+                      </span>
+                      <span className="text-sm font-bold text-warning shrink-0">{formatColones(o.totalColones)}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="flex justify-between items-center border-t mt-3 pt-3 font-semibold">
+                  <span className="text-sm">{report.pendingPayment.length} pedido{report.pendingPayment.length === 1 ? "" : "s"}</span>
+                  <span className="text-sm text-warning">{formatColones(report.pendingPayment.reduce((s, o) => s + o.totalColones, 0))}</span>
                 </div>
               </>
             )}

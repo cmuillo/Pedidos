@@ -5,6 +5,7 @@ import OrderCard from "@/components/OrderCard";
 const PAGE_SIZE = 20;
 
 type TypeFilter = "ALL" | "DELIVERY" | "PICKUP";
+type PaidFilter = "ALL" | "PAID" | "UNPAID";
 
 const TYPE_FILTERS: { id: TypeFilter; label: string }[] = [
   { id: "ALL", label: "Todos" },
@@ -12,9 +13,16 @@ const TYPE_FILTERS: { id: TypeFilter; label: string }[] = [
   { id: "PICKUP", label: "🏪 Recoger" },
 ];
 
+const PAID_FILTERS: { id: PaidFilter; label: string }[] = [
+  { id: "ALL", label: "Todos" },
+  { id: "PAID", label: "✓ Pagados" },
+  { id: "UNPAID", label: "⏳ Pendientes de pago" },
+];
+
 export default function HistorialPage() {
   const [q, setQ] = useState("");
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("ALL");
+  const [paidFilter, setPaidFilter] = useState<PaidFilter>("ALL");
   const [orders, setOrders] = useState<any[]>([]);
   const [sinpe, setSinpe] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -22,7 +30,7 @@ export default function HistorialPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
 
-  const load = useCallback(async (query: string, pageNum: number, type: TypeFilter) => {
+  const load = useCallback(async (query: string, pageNum: number, type: TypeFilter, paid: PaidFilter) => {
     setLoading(true);
     const params = new URLSearchParams({
       status: "DELIVERED",
@@ -31,6 +39,8 @@ export default function HistorialPage() {
     });
     if (query.trim()) params.set("q", query.trim());
     if (type !== "ALL") params.set("type", type);
+    if (paid === "PAID") params.set("paid", "true");
+    if (paid === "UNPAID") params.set("paid", "false");
     const res = await fetch(`/api/admin/orders?${params}`, { cache: "no-store" });
     if (res.ok) {
       const data = await res.json();
@@ -41,14 +51,14 @@ export default function HistorialPage() {
     setLoading(false);
   }, []);
 
-  // Reset to page 1 whenever the search term or type filter changes (debounced).
+  // Reset to page 1 whenever the search term or filters change (debounced).
   useEffect(() => {
     const t = setTimeout(() => {
       setPage(1);
-      load(q, 1, typeFilter);
+      load(q, 1, typeFilter, paidFilter);
     }, 300);
     return () => clearTimeout(t);
-  }, [q, typeFilter, load]);
+  }, [q, typeFilter, paidFilter, load]);
 
   useEffect(() => {
     fetch("/api/admin/settings", { cache: "no-store" })
@@ -60,7 +70,7 @@ export default function HistorialPage() {
   function goTo(p: number) {
     const next = Math.min(Math.max(p, 1), totalPages);
     setPage(next);
-    load(q, next, typeFilter);
+    load(q, next, typeFilter, paidFilter);
   }
 
   return (
@@ -87,6 +97,17 @@ export default function HistorialPage() {
         ))}
       </div>
 
+      <div className="flex flex-wrap gap-2">
+        {PAID_FILTERS.map((f) => (
+          <button
+            key={f.id}
+            className={`px-3 py-2 border rounded-lg text-sm font-medium transition-colors ${paidFilter === f.id ? "bg-accent text-accent-fg border-accent" : "bg-surface hover:bg-surface-2"}`}
+            onClick={() => setPaidFilter(f.id)}>
+            {f.label}
+          </button>
+        ))}
+      </div>
+
       {total > 0 && (
         <div className="flex justify-between text-sm border-b pb-2">
           <span className="text-muted">{total} pedido{total === 1 ? "" : "s"}</span>
@@ -98,11 +119,11 @@ export default function HistorialPage() {
 
       {!loading && orders.length === 0 ? (
         <p className="text-center text-muted py-8">
-          {q.trim() || typeFilter !== "ALL" ? "Sin resultados para tu búsqueda" : "Aún no hay pedidos entregados"}
+          {q.trim() || typeFilter !== "ALL" || paidFilter !== "ALL" ? "Sin resultados para tu búsqueda" : "Aún no hay pedidos entregados"}
         </p>
       ) : (
         orders.map((o) => (
-          <OrderCard key={o.id} order={o} sinpePhone={sinpe} onChange={() => load(q, page, typeFilter)} readOnly />
+          <OrderCard key={o.id} order={o} sinpePhone={sinpe} onChange={() => load(q, page, typeFilter, paidFilter)} readOnly />
         ))
       )}
 
