@@ -53,11 +53,13 @@ export default function MenuGrid({ onBusiness, closed = false }: { onBusiness: (
                 <div className="flex items-center gap-1">
                   <button
                     disabled={inCart <= 0}
+                    aria-label={`Quitar una unidad de ${p.name}`}
                     className="w-8 h-8 border rounded-lg text-lg disabled:opacity-40 hover:bg-surface-2 transition-colors"
                     onClick={() => setQty({ productId: p.id, name: p.name, unitPrice: p.priceColones }, inCart - 1)}>−</button>
-                  <span className="w-7 text-center font-medium text-sm">{inCart}</span>
+                  <span className="w-7 text-center font-medium text-sm" aria-live="polite">{inCart}</span>
                   <button
                     disabled={soldOut || inCart >= p.stock}
+                    aria-label={`Agregar una unidad de ${p.name}`}
                     className="w-8 h-8 border rounded-lg text-lg disabled:opacity-40 hover:bg-surface-2 transition-colors"
                     onClick={() => setQty({ productId: p.id, name: p.name, unitPrice: p.priceColones }, inCart + 1)}>+</button>
                 </div>
