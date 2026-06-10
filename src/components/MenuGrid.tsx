@@ -41,23 +41,29 @@ export default function MenuGrid({ onBusiness, closed = false }: { onBusiness: (
         const soldOut = p.stock <= 0;
         return (
           <div key={p.id} className="border rounded-xl p-4 flex flex-col gap-2 bg-surface shadow-sm">
-            <div className="flex justify-between items-start">
-              <span className="font-semibold">{p.name}</span>
-              <span className="text-accent font-medium">{formatColones(p.priceColones)}</span>
-            </div>
-            <span className={`text-sm ${soldOut ? "text-danger" : "text-muted"}`}>
-              {soldOut ? "Agotado" : `${p.stock} disponibles`}
-            </span>
-            <div className="flex items-center gap-2 mt-auto">
-              <button
-                disabled={inCart <= 0}
-                className="w-9 h-9 border rounded-lg text-lg disabled:opacity-40 hover:bg-surface-2 transition-colors"
-                onClick={() => setQty({ productId: p.id, name: p.name, unitPrice: p.priceColones }, inCart - 1)}>−</button>
-              <span className="w-8 text-center font-medium">{inCart}</span>
-              <button
-                disabled={soldOut || inCart >= p.stock}
-                className="w-9 h-9 border rounded-lg text-lg disabled:opacity-40 hover:bg-surface-2 transition-colors"
-                onClick={() => setQty({ productId: p.id, name: p.name, unitPrice: p.priceColones }, inCart + 1)}>+</button>
+            <div className="flex justify-between items-start gap-3">
+              <div className="flex-1 min-w-0">
+                <span className="font-bold text-base leading-tight block">{p.name}</span>
+                <span className={`text-sm font-medium mt-0.5 block ${soldOut ? "text-danger" : "text-muted"}`}>
+                  {soldOut ? "Agotado" : `${p.stock} disponibles`}
+                </span>
+              </div>
+              <div className="flex flex-col items-end gap-2 shrink-0">
+                <span className="text-accent font-semibold">{formatColones(p.priceColones)}</span>
+                <div className="flex items-center gap-1">
+                  <button
+                    disabled={inCart <= 0}
+                    aria-label={`Quitar una unidad de ${p.name}`}
+                    className="w-8 h-8 border rounded-lg text-lg disabled:opacity-40 hover:bg-surface-2 transition-colors"
+                    onClick={() => setQty({ productId: p.id, name: p.name, unitPrice: p.priceColones }, inCart - 1)}>−</button>
+                  <span className="w-7 text-center font-medium text-sm" aria-live="polite">{inCart}</span>
+                  <button
+                    disabled={soldOut || inCart >= p.stock}
+                    aria-label={`Agregar una unidad de ${p.name}`}
+                    className="w-8 h-8 border rounded-lg text-lg disabled:opacity-40 hover:bg-surface-2 transition-colors"
+                    onClick={() => setQty({ productId: p.id, name: p.name, unitPrice: p.priceColones }, inCart + 1)}>+</button>
+                </div>
+              </div>
             </div>
           </div>
         );
