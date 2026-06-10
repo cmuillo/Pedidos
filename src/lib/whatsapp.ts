@@ -57,6 +57,29 @@ export function buildNavLink(lat: number, lng: number): string {
   return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
 }
 
+export function buildChargeLink(params: {
+  whatsapp: string;
+  customerName: string;
+  code: string;
+  items: MsgItem[];
+  totalColones: number;
+  sinpePhone?: string | null;
+}): string {
+  const lines = params.items
+    .map((i) => `• ${i.qty}x ${i.nameSnapshot} (${formatColones(i.unitPrice * i.qty)})`)
+    .join("\n");
+  const sinpeNumber = (params.sinpePhone && params.sinpePhone.trim()) || "87500829";
+  const text =
+    `¡Hola ${params.customerName}! 😊🍦\n` +
+    `Queremos recordarte amablemente que tu pedido #${params.code} está pendiente de pago:\n\n` +
+    `${lines}\n\n` +
+    `Total: *${formatColones(params.totalColones)}* 💵\n\n` +
+    `Podés pagar por SINPE al número ${sinpeNumber} y mandarnos el comprobante a este chat 📲\n` +
+    `o en efectivo al momento de la entrega. 💵\n\n` +
+    `*¡Gracias y esperamos poder atenderte pronto!* 🙏💖`;
+  return `https://wa.me/${params.whatsapp}?text=${encodeURIComponent(text)}`;
+}
+
 export function buildThankYouLink(params: {
   whatsapp: string;
   customerName: string;

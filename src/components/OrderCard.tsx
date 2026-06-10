@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { formatColones } from "@/lib/money";
 import { netTotal } from "@/lib/order";
-import { buildOnTheWayLink, buildReceivedLink, buildNavLink } from "@/lib/whatsapp";
+import { buildOnTheWayLink, buildReceivedLink, buildNavLink, buildChargeLink } from "@/lib/whatsapp";
 import ConfirmDialog from "@/components/ConfirmDialog";
 
 type OrderItem = { nameSnapshot: string; qty: number; unitPrice: number };
@@ -161,12 +161,41 @@ export default function OrderCard({
         <p className="text-sm">📍 {order.addressText}</p>
       )}
       {readOnly && (
-        <div className="pt-1">
+        <div className="pt-1 flex flex-wrap gap-2 items-center">
           <button
             className={`px-3 py-2 border rounded-lg text-sm font-medium transition-colors ${order.paid ? "bg-success text-accent-fg border-success" : "hover:bg-surface-2"}`}
             onClick={() => patch({ paid: !order.paid })}>
             {order.paid ? "✓ Pagado" : "Marcar pagado"}
           </button>
+          {!order.paid && (
+            <button
+              type="button"
+              aria-label="Enviar recordatorio de cobro por WhatsApp"
+              title="Enviar recordatorio de cobro por WhatsApp"
+              className="flex items-center gap-1.5 px-3 py-2 border rounded-lg text-sm font-medium bg-success text-accent-fg border-success hover:opacity-90 transition-opacity"
+              onClick={() => {
+                const a = document.createElement("a");
+                a.href = buildChargeLink({
+                  whatsapp: order.whatsapp,
+                  customerName: order.customerName,
+                  code: order.code,
+                  items: order.items,
+                  totalColones: net,
+                  sinpePhone: sinpePhone,
+                });
+                a.target = "_blank";
+                a.rel = "noopener noreferrer";
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+              }}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              </svg>
+              Cobrar
+            </button>
+          )}
         </div>
       )}
       {!readOnly && order.distanceMeters != null && (
